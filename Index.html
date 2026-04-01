@@ -1,0 +1,1600 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Asesor de Plazos Judiciales</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    /* Paleta principal: fondo azul pizarra cálido, cards en crema suave */
+    --bg:           #eef1f7;
+    --surface:      #f9fafc;
+    --surface2:     #f0f3f8;
+    --border:       #d6dbe8;
+    --border-strong:#b0b9cc;
+    --text:         #1e2535;
+    --text-2:       #4a5568;
+    --text-3:       #8492a6;
+    --accent:       #2c4a8f;
+    --accent-dark:  #1e3566;
+    --blue:         #3b6fd4;
+    --blue-light:   #e8f0fd;
+    --blue-text:    #1e4db7;
+    --green:        #16a34a;
+    --green-light:  #ecfdf5;
+    --green-text:   #15803d;
+    --amber:        #c47a0a;
+    --amber-light:  #fef9ee;
+    --amber-text:   #854f0b;
+    --red:          #d63030;
+    --red-light:    #fff0f0;
+    --red-text:     #9b1c1c;
+    --radius:       10px;
+    --radius-lg:    14px;
+    --shadow:       0 1px 4px rgba(44,74,143,0.08), 0 1px 2px rgba(44,74,143,0.04);
+    --shadow-md:    0 4px 14px rgba(44,74,143,0.12), 0 2px 4px rgba(44,74,143,0.06);
+  }
+
+  /* ── MODO OSCURO ─────────────────────────────────────────────────────────── */
+  html.dark {
+    --bg:           #0f1117;
+    --surface:      #181c27;
+    --surface2:     #1e2333;
+    --border:       #2a3148;
+    --border-strong:#3a4560;
+    --text:         #e2e8f4;
+    --text-2:       #9aaac4;
+    --text-3:       #5c6f8a;
+    --accent:       #3a5fba;
+    --accent-dark:  #2c4a96;
+    --blue:         #5b8def;
+    --blue-light:   #1a2540;
+    --blue-text:    #89aff5;
+    --green:        #22c55e;
+    --green-light:  #0d2318;
+    --green-text:   #4ade80;
+    --amber:        #f59e0b;
+    --amber-light:  #231a06;
+    --amber-text:   #fbbf24;
+    --red:          #f87171;
+    --red-light:    #2a0f0f;
+    --red-text:     #fca5a5;
+    --shadow:       0 1px 4px rgba(0,0,0,0.4), 0 1px 2px rgba(0,0,0,0.3);
+    --shadow-md:    0 4px 14px rgba(0,0,0,0.5), 0 2px 4px rgba(0,0,0,0.4);
+  }
+
+  /* Toggle dark mode */
+  .dark-toggle {
+    display: flex; align-items: center; gap: 8px;
+    cursor: pointer; background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 20px; padding: 5px 12px 5px 8px;
+    transition: background 0.2s;
+    color: white; font-size: 12px; font-weight: 500;
+    font-family: 'DM Sans', sans-serif;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .dark-toggle:hover { background: rgba(255,255,255,0.18); }
+  .toggle-track {
+    width: 28px; height: 16px;
+    background: rgba(255,255,255,0.25);
+    border-radius: 8px; position: relative;
+    transition: background 0.2s; flex-shrink: 0;
+  }
+  html.dark .toggle-track { background: rgba(255,255,255,0.5); }
+  .toggle-thumb {
+    position: absolute; top: 2px; left: 2px;
+    width: 12px; height: 12px;
+    background: white; border-radius: 50%;
+    transition: transform 0.2s;
+  }
+  html.dark .toggle-thumb { transform: translateX(12px); }
+
+  /* Inputs en dark mode */
+  html.dark .field select:focus,
+  html.dark .field input:focus { background: var(--surface2); }
+  html.dark .field select,
+  html.dark .field input[type="date"],
+  html.dark .field input[type="number"] { color-scheme: dark; }
+  html.dark input[type="date"] { color-scheme: dark; }
+  html.dark .suspension-group input { background: var(--surface2); color: var(--blue-text); }
+  html.dark select option { background: #1e2333; color: #e2e8f4; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    font-size: 14px;
+    line-height: 1.5;
+  }
+
+  /* HEADER */
+  .header {
+    background: var(--accent);
+    color: white;
+    padding: 20px 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .header-left { display: flex; align-items: center; gap: 14px; }
+  .header-icon {
+    width: 38px; height: 38px;
+    background: rgba(255,255,255,0.15);
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+  }
+  .header h1 { font-size: 16px; font-weight: 600; letter-spacing: -0.01em; }
+  .header-date { font-size: 12px; color: rgba(255,255,255,0.55); font-family: 'DM Mono', monospace; }
+
+  /* TABS */
+  .tabs {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 0 32px;
+    display: flex; gap: 0;
+  }
+  .tab-btn {
+    padding: 14px 20px;
+    font-size: 12px; font-weight: 500;
+    color: var(--text-3);
+    background: none; border: none; cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: all 0.15s; letter-spacing: 0.04em;
+    text-transform: uppercase;
+    font-family: 'DM Sans', sans-serif;
+  }
+  .tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
+  .tab-btn:hover:not(.active) { color: var(--text-2); }
+
+  /* LAYOUT */
+  .main { max-width: 1100px; margin: 0 auto; padding: 28px 24px; display: grid; grid-template-columns: 1fr 340px; gap: 20px; }
+
+  /* CARDS */
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); box-shadow: var(--shadow); }
+  .card-header { padding: 16px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 10px; }
+  .card-header h2 { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-2); }
+  .step-badge {
+    width: 20px; height: 20px; border-radius: 50%;
+    background: var(--accent); color: white;
+    font-size: 10px; font-weight: 600;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'DM Mono', monospace;
+    flex-shrink: 0;
+  }
+  .card-body { padding: 20px; }
+
+  /* FORM */
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  .field { display: flex; flex-direction: column; gap: 6px; }
+  .field label { font-size: 11px; font-weight: 500; color: var(--text-3); text-transform: uppercase; letter-spacing: 0.05em; }
+  .field select, .field input[type="date"], .field input[type="number"] {
+    padding: 9px 12px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface2);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    outline: none;
+    transition: border-color 0.15s, box-shadow 0.15s;
+    width: 100%;
+    appearance: none; -webkit-appearance: none;
+  }
+  .field select { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%239c9a94' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 10px center; padding-right: 32px; }
+  .field select:focus, .field input:focus { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(37,99,235,0.1); background: white; }
+  .field select:disabled { opacity: 0.5; cursor: not-allowed; }
+  .field .hint { font-size: 10px; color: var(--blue); font-weight: 500; margin-top: 2px; }
+  .field .hint.warn { color: var(--amber); }
+
+  /* PARTY BUTTONS */
+  .party-btns { display: flex; gap: 8px; }
+  .party-btn {
+    flex: 1; padding: 9px 8px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface2);
+    color: var(--text-2);
+    font-size: 12px; font-weight: 500;
+    cursor: pointer; transition: all 0.15s;
+    font-family: 'DM Sans', sans-serif;
+    text-align: center;
+  }
+  .party-btn:hover { border-color: var(--border-strong); }
+  .party-btn.active { background: var(--accent); color: white; border-color: var(--accent); }
+
+  /* DIVIDER ROW */
+  .form-footer { padding: 16px 20px; border-top: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; gap: 12px; background: var(--surface2); border-radius: 0 0 var(--radius-lg) var(--radius-lg); }
+  .suspension-group { display: flex; align-items: center; gap: 8px; }
+  .suspension-group label { font-size: 11px; color: var(--text-3); font-weight: 500; text-transform: uppercase; letter-spacing: 0.04em; white-space: nowrap; }
+  .suspension-group input { width: 56px; padding: 7px 10px; border: 1px solid var(--border); border-radius: 8px; background: white; text-align: center; font-family: 'DM Mono', monospace; font-size: 13px; font-weight: 500; color: var(--blue-text); outline: none; }
+  .suspension-group input:focus { border-color: var(--blue); }
+  .suspension-group .sublabel { font-size: 10px; color: var(--text-3); }
+
+  .calc-btn {
+    padding: 11px 28px;
+    background: var(--accent);
+    color: white;
+    border: none; border-radius: var(--radius);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px; font-weight: 600;
+    cursor: pointer; transition: all 0.15s;
+    letter-spacing: 0.02em;
+    white-space: nowrap;
+  }
+  .calc-btn:hover { background: var(--accent-dark); transform: translateY(-1px); box-shadow: var(--shadow-md); }
+  .calc-btn:active { transform: translateY(0); }
+
+  /* CHECKBOX */
+  .check-row { display: flex; align-items: center; gap: 8px; }
+  .check-row input[type="checkbox"] { width: 15px; height: 15px; cursor: pointer; accent-color: var(--accent); }
+  .check-row label { font-size: 12px; color: var(--text-2); cursor: pointer; }
+
+  /* TABLA DISTANCIA */
+  .tabla-box { background: var(--blue-light); border: 1px solid var(--border-strong); border-radius: var(--radius); padding: 12px; }
+  .tabla-box label { font-size: 11px; font-weight: 600; color: var(--blue-text); display: block; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.04em; }
+  .tabla-box input { width: 100%; padding: 8px 10px; border: 1px solid var(--border-strong); border-radius: 7px; background: white; font-size: 13px; font-family: 'DM Mono', monospace; color: var(--blue-text); font-weight: 500; outline: none; }
+
+  /* ACCORDIONS */
+  .accordion { border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; background: var(--surface); }
+  .accordion-trigger {
+    width: 100%; display: flex; align-items: center; justify-content: space-between;
+    padding: 13px 16px; background: var(--surface);
+    cursor: pointer; border: none;
+    font-family: 'DM Sans', sans-serif;
+    transition: background 0.1s;
+  }
+  .accordion-trigger:hover { background: var(--surface2); }
+  .accordion-trigger-left { display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 600; color: var(--text); text-transform: uppercase; letter-spacing: 0.04em; }
+  .accordion-chevron { width: 14px; height: 14px; color: var(--text-3); transition: transform 0.2s; flex-shrink: 0; }
+  .accordion-body { max-height: 0; overflow: hidden; transition: max-height 0.3s ease; }
+  .accordion-body.open { max-height: 900px; }
+  .accordion-body.open .accordion-chevron { transform: rotate(180deg); }
+  .accordion-inner { padding: 16px; border-top: 1px solid var(--border); font-size: 12px; color: var(--text-2); line-height: 1.7; }
+
+  /* TABLE */
+  .ref-table { width: 100%; border-collapse: collapse; font-size: 11px; }
+  .ref-table th { background: var(--surface2); color: var(--text-3); font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; padding: 8px 10px; text-align: left; border-bottom: 1px solid var(--border); }
+  .ref-table td { padding: 8px 10px; border-bottom: 1px solid var(--border); }
+  .ref-table tr:last-child td { border-bottom: none; }
+  .ref-table tr:nth-child(even) td { background: var(--surface2); }
+  .days-badge { font-family: 'DM Mono', monospace; font-weight: 500; color: var(--blue-text); background: var(--blue-light); padding: 2px 8px; border-radius: 100px; font-size: 10px; }
+  .bold-row td { font-weight: 600; color: var(--text); }
+
+  /* RIGHT PANEL */
+  .result-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); box-shadow: var(--shadow); overflow: hidden; }
+  .result-card-header { padding: 14px 18px; border-bottom: 1px solid var(--border); background: var(--surface2); display: flex; align-items: center; justify-content: space-between; }
+  .result-card-title { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-3); }
+
+  .result-empty { padding: 48px 20px; text-align: center; color: var(--text-3); font-size: 12px; }
+  .result-empty-icon { font-size: 28px; margin-bottom: 10px; opacity: 0.4; }
+
+  .result-content { padding: 20px; }
+
+  .day1-label { font-size: 10px; font-weight: 600; color: var(--text-3); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 4px; }
+  .day1-date { font-size: 13px; font-weight: 500; color: var(--text-2); margin-bottom: 16px; }
+
+  .deadline-block {
+    background: var(--accent);
+    border-radius: var(--radius);
+    padding: 18px;
+    color: white;
+    text-align: center;
+    margin-bottom: 14px;
+    position: relative;
+    overflow: hidden;
+  }
+  .deadline-block::after {
+    content: ''; position: absolute;
+    top: -20px; right: -20px;
+    width: 80px; height: 80px;
+    background: rgba(255,255,255,0.04);
+    border-radius: 50%;
+  }
+  .deadline-label { font-size: 10px; color: rgba(255,255,255,0.5); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 6px; font-weight: 600; }
+  .deadline-date { font-size: 17px; font-weight: 600; line-height: 1.3; }
+  .deadline-weekday { font-size: 11px; color: rgba(255,255,255,0.6); margin-top: 3px; }
+
+  /* COUNTDOWN */
+  .countdown-bar { border-radius: var(--radius); padding: 12px 14px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+  .countdown-bar.ok { background: var(--green-light); border: 1px solid var(--border); }
+  .countdown-bar.warn { background: var(--amber-light); border: 1px solid var(--border-strong); }
+  .countdown-bar.urgent { background: var(--red-light); border: 1px solid var(--border-strong); }
+  .countdown-left { font-size: 11px; font-weight: 500; }
+  .countdown-bar.ok .countdown-left { color: var(--green-text); }
+  .countdown-bar.warn .countdown-left { color: var(--amber-text); }
+  .countdown-bar.urgent .countdown-left { color: var(--red-text); }
+  .countdown-days { font-family: 'DM Mono', monospace; font-size: 20px; font-weight: 500; }
+  .countdown-bar.ok .countdown-days { color: var(--green); }
+  .countdown-bar.warn .countdown-days { color: var(--amber); }
+  .countdown-bar.urgent .countdown-days { color: var(--red); }
+  .countdown-unit { font-size: 10px; color: var(--text-3); margin-left: 3px; }
+
+  /* BADGE */
+  .badge { display: inline-flex; align-items: center; padding: 3px 10px; border-radius: 100px; font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; }
+  .badge-own { background: #dcfce7; color: #15803d; }
+  .badge-opp { background: #fee2e2; color: #991b1b; }
+  .badge-both { background: #e0e7ff; color: #3730a3; }
+
+  /* STRATEGY */
+  .strategy-box { border-left: 3px solid var(--blue); background: var(--blue-light); border-radius: 0 var(--radius) var(--radius) 0; padding: 12px 14px; margin-bottom: 14px; }
+  .strategy-box.critical { border-left-color: var(--red); background: var(--red-light); }
+  .strategy-label { font-size: 10px; font-weight: 600; color: var(--blue-text); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 5px; display: flex; align-items: center; justify-content: space-between; }
+  .strategy-box.critical .strategy-label { color: var(--red-text); }
+  .strategy-text { font-size: 12px; color: var(--text); line-height: 1.6; }
+
+  /* RISK BOX */
+  .risk-box { background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius); padding: 12px 14px; }
+  .risk-box-title { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-3); margin-bottom: 8px; }
+  .risk-item { display: flex; align-items: flex-start; gap: 7px; font-size: 11px; color: var(--text-2); line-height: 1.5; margin-bottom: 5px; }
+  .risk-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--red); margin-top: 5px; flex-shrink: 0; }
+
+  /* HISTORIAL */
+  .history-section { margin-top: 16px; }
+  .history-title { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-3); margin-bottom: 8px; }
+  .history-item {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 8px 10px; border: 1px solid var(--border); border-radius: 8px;
+    background: var(--surface2); margin-bottom: 6px;
+    cursor: pointer; transition: background 0.1s;
+  }
+  .history-item:hover { background: var(--surface); }
+  .history-item-left { font-size: 11px; color: var(--text-2); }
+  .history-item-name { font-weight: 500; color: var(--text); font-size: 11px; }
+  .history-item-date { font-family: 'DM Mono', monospace; font-size: 11px; font-weight: 500; color: var(--blue-text); }
+
+
+  /* desde-box verificar warning */
+  #desde-text { line-height: 1.6; }
+  #desde-text br { display: block; margin-top: 5px; }
+
+  /* ANIMATIONS */
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+  .animate-in { animation: fadeIn 0.25s ease; }
+
+  @media (max-width: 900px) {
+    .main { grid-template-columns: 1fr; }
+    .form-grid { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 600px) {
+    .header { padding: 14px 16px; }
+    .main { padding: 16px; }
+    .tabs { padding: 0 16px; }
+  }
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div class="header-left">
+    <div class="header-icon">⚖️</div>
+    <div>
+      <h1>Asesor de Plazos Judiciales</h1>
+    </div>
+  </div>
+  <div style="display:flex;align-items:center;gap:16px;">
+    <div class="header-date" id="current-date"></div>
+    <button class="dark-toggle" onclick="toggleDark()" title="Cambiar modo">
+      <div class="toggle-track"><div class="toggle-thumb"></div></div>
+      <span id="dark-label">Modo oscuro</span>
+    </button>
+  </div>
+</header>
+
+<div class="tabs">
+  <button class="tab-btn active" id="tab-civil">Procedimientos Civiles</button>
+</div>
+
+<div class="main">
+  <!-- LEFT PANEL -->
+  <div style="display:flex;flex-direction:column;gap:16px;">
+
+    <!-- CARD: CONFIGURAR -->
+    <div class="card">
+      <div class="card-header">
+        <div class="step-badge">1</div>
+        <h2>Configurar el Plazo</h2>
+      </div>
+      <div class="card-body">
+        <div class="form-grid">
+
+          <!-- COL 1 -->
+          <div style="display:flex;flex-direction:column;gap:14px;">
+
+            <div style="display:flex;flex-direction:column;gap:14px;">
+              <div class="field">
+                <label>Yo represento al:</label>
+                <div class="party-btns">
+                  <button class="party-btn" id="btn-demandante" onclick="setParty('demandante')">Demandante</button>
+                  <button class="party-btn" id="btn-demandado" onclick="setParty('demandado')">Demandado</button>
+                </div>
+              </div>
+
+              <!-- PASO A: Procedimiento -->
+              <div class="field">
+                <label>
+                  <span style="background:var(--accent);color:white;border-radius:50%;width:16px;height:16px;display:inline-flex;align-items:center;justify-content:center;font-size:9px;font-weight:600;margin-right:5px;">A</span>
+                  Tipo de Procedimiento
+                </label>
+                <select id="proc-category" onchange="onProcChange()">
+                  <option value="">Seleccione procedimiento…</option>
+                  <option value="ordinario">Ordinario de Mayor Cuantía</option>
+                  <option value="menor_cuantia">Ordinario de Menor Cuantía</option>
+                  <option value="sumario">Juicio Sumario</option>
+                  <option value="ejecutivo">Juicio Ejecutivo (Cobranza)</option>
+                  <option value="arriendo">Juicio de Arrendamiento (Ley 18.101)</option>
+                  <option value="recursos">Recursos Judiciales</option>
+                  <option value="otros">Incidentes / Traslados</option>
+                </select>
+              </div>
+
+              <!-- PASO B: Etapa Procesal -->
+              <div class="field">
+                <label>
+                  <span style="background:var(--accent);color:white;border-radius:50%;width:16px;height:16px;display:inline-flex;align-items:center;justify-content:center;font-size:9px;font-weight:600;margin-right:5px;">B</span>
+                  Etapa Procesal
+                </label>
+                <select id="proc-stage" disabled onchange="onStageChange()">
+                  <option value="">Primero elija procedimiento…</option>
+                </select>
+                <div id="stage-helper" class="hint" style="display:none;"></div>
+              </div>
+
+              <!-- PASO C: Trámite -->
+              <div class="field">
+                <label>
+                  <span style="background:var(--accent);color:white;border-radius:50%;width:16px;height:16px;display:inline-flex;align-items:center;justify-content:center;font-size:9px;font-weight:600;margin-right:5px;">C</span>
+                  Trámite a Calcular
+                </label>
+                <select id="proc-type" disabled onchange="handleHitoChange()">
+                  <option value="">Primero elija etapa…</option>
+                </select>
+                <div id="tramite-helper" class="hint" style="display:none;"></div>
+                <div id="desde-box" style="display:none;margin-top:6px;background:var(--blue-light);border:1px solid var(--border-strong);border-radius:8px;padding:9px 12px;">
+                  <div style="font-size:10px;font-weight:600;color:var(--blue-text);text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px;">📅 Desde cuándo se cuenta</div>
+                  <div id="desde-text" style="font-size:12px;color:var(--text);line-height:1.5;"></div>
+                </div>
+              </div>
+
+              <div id="tabla-div" style="display:none;">
+                <div class="tabla-box">
+                  <label>Días adicionales por Tabla de Emplazamiento</label>
+                  <input type="number" id="tabla-days" value="0" min="0">
+                </div>
+              </div>
+
+              <!-- Advertencia proactiva de resoluciones pendientes -->
+              <div id="previa-warn" style="display:none;background:var(--amber-light);border:1px solid var(--border-strong);border-radius:8px;padding:10px 12px;">
+                <div style="font-size:10px;font-weight:600;color:var(--amber-text);text-transform:uppercase;letter-spacing:.05em;margin-bottom:5px;">⚠ Verifique antes de calcular</div>
+                <div id="previa-warn-text" style="font-size:11px;color:var(--text);line-height:1.6;"></div>
+              </div>
+            </div>
+
+
+
+          <!-- COL 2 -->
+          <div style="display:flex;flex-direction:column;gap:14px;">
+            <div class="card-header" style="padding:0;border:none;margin-bottom:-2px;">
+              <div class="step-badge">2</div>
+              <h2>Fecha de Referencia</h2>
+            </div>
+
+            <!-- Dilatorias: aparece ANTES del campo de fecha para que el usuario sepa qué fecha ingresar -->
+            <div id="dilatorias-div" style="display:none;">
+              <div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:12px 14px;">
+                <div style="font-size:11px;font-weight:600;color:var(--text-2);margin-bottom:10px;display:flex;align-items:center;gap:7px;">
+                  <span style="background:var(--amber);color:white;border-radius:50%;width:16px;height:16px;display:inline-flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;flex-shrink:0;">!</span>
+                  ¿Hubo excepciones dilatorias previas?
+                </div>
+                <div class="check-row" style="margin-bottom:8px;">
+                  <input type="checkbox" id="hubo-dilatorias" onchange="onDilatoriasChange()">
+                  <label for="hubo-dilatorias" style="font-size:12px;">Sí — se opusieron excepciones dilatorias</label>
+                </div>
+                <div id="dilatorias-warn" style="display:none;margin-top:8px;background:var(--amber-light);border:1px solid var(--border-strong);border-radius:8px;padding:9px 12px;">
+                  <div style="font-size:10px;font-weight:600;color:var(--amber-text);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px;">⚠ Dies a quo distinto — Art. 308 CPC</div>
+                  <div style="font-size:11px;color:var(--text);line-height:1.6;">
+                    Si se opusieron excepciones dilatorias, el plazo para contestar <strong>no corre desde la notificación de la demanda original</strong>. Corre desde la notificación de la resolución que rechaza las dilatorias o que tiene por subsanado el vicio (Art. 308 CPC).<br><br>
+                    Ingrese como fecha de referencia la notificación de <strong>esa resolución</strong>, no la de la demanda original.
+                  </div>
+                  <div id="contexto-procesal-field" style="margin-top:10px;">
+                    <label style="font-size:10px;font-weight:600;color:var(--amber-text);text-transform:uppercase;letter-spacing:.04em;display:block;margin-bottom:5px;">Contexto procesal</label>
+                    <select id="contexto-procesal" onchange="onContextoChange()" style="width:100%;padding:8px 10px;border:1px solid var(--border-strong);border-radius:8px;background:white;font-size:12px;font-family:'DM Sans',sans-serif;color:var(--text);outline:none;">
+                      <option value="">Seleccione el resultado de la dilatoria…</option>
+                      <option value="rechazada">Excepción rechazada — contestar desde notif. resolución que rechaza</option>
+                      <option value="subsanada">Excepción acogida y demanda rectificada — contestar desde notif. resolución que tuvo por subsanada</option>
+                      <option value="acogida_termino">Excepción acogida y juicio terminado — no hay plazo para contestar</option>
+                    </select>
+                    <div id="contexto-hint" style="display:none;margin-top:5px;font-size:11px;color:var(--text-2);font-style:italic;"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="field">
+              <label id="date-label">Fecha de Notificación</label>
+              <input type="date" id="ref-date">
+            </div>
+
+            <div id="notif-options" class="field">
+              <label>Forma de Notificación</label>
+              <select id="notif-type" onchange="onNotifChange()">
+                <option value="0">Personal / Cédula (Art. 40 o Art. 48)</option>
+                <option value="44">Art. 44 — Cédula en domicilio (no encontrado)</option>
+                <option value="3">Carta Certificada (+3 días hábiles)</option>
+                <option value="tácita">Notificación Tácita (Día 1 es hoy)</option>
+              </select>
+              <div id="notif-44-warn" style="display:none;margin-top:6px;background:var(--amber-light);border:1px solid var(--border-strong);border-radius:8px;padding:9px 12px;">
+                <div style="font-size:10px;font-weight:600;color:var(--amber-text);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px;">⚠ Verificar antes de calcular</div>
+                <div style="font-size:11px;color:var(--text);line-height:1.6;">
+                  Para que esta notificación sea válida debe constar en el acta: (1) certificación de que ese es el domicilio del notificado y que se encuentra en el lugar del juicio, (2) nombre o identificación de la persona adulta con quien se dejaron las copias, (3) envío de carta certificada. Si alguno falta, la notificación es impugnable por nulidad procesal.
+                </div>
+              </div>
+            </div>
+
+
+            <div id="prorroga-div" class="check-row">
+              <input type="checkbox" id="last-day-holiday">
+              <label for="last-day-holiday">Prorrogar si vencimiento cae en feriado o domingo</label>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="form-footer">
+        <div id="suspension-ui" class="suspension-group">
+          <label>Suspensión:</label>
+          <input type="number" id="suspension-days" value="0" min="0">
+          <span class="sublabel">días hábiles de entorpecimiento</span>
+        </div>
+        <button class="calc-btn" onclick="calculateDeadline()">Calcular Plazo Fatal →</button>
+      </div>
+    </div>
+
+    <!-- ACCORDIONS -->
+    <div style="display:flex;flex-direction:column;gap:10px;">
+
+      <div class="accordion" id="manual-abandono">
+        <button class="accordion-trigger" onclick="toggleAcc('body-1', this)">
+          <div class="accordion-trigger-left">
+            <span>⚖️</span> Manual: Gestión Útil y Abandono
+          </div>
+          <svg class="accordion-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+        </button>
+        <div id="body-1" class="accordion-body">
+          <div class="accordion-inner">
+            <p>El abandono del procedimiento (Art. 152 CPC) opera cuando <strong>todas las partes</strong> han cesado en la prosecución del juicio durante <strong>6 meses</strong>, contados desde la última resolución recaída en una gestión útil.</p>
+            <br>
+            <p>Solo se interrumpe con gestiones que den <strong>curso progresivo</strong> a los autos (solicitar diligencias, acompañar documentos, etc.). Meras consultas al tribunal no bastan.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="accordion" id="manual-recursos">
+        <button class="accordion-trigger" onclick="toggleAcc('body-2', this)">
+          <div class="accordion-trigger-left">
+            <span>📚</span> Vademécum: Recursos y Plazos
+          </div>
+          <svg class="accordion-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+        </button>
+        <div id="body-2" class="accordion-body">
+          <div class="accordion-inner">
+            <p style="font-size:10px;color:var(--text-3);margin-bottom:10px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;">Civil — Días hábiles (lunes a sábado)</p>
+            <table class="ref-table">
+              <thead><tr><th>Resolución / Situación</th><th>Recurso</th><th>Plazo</th><th>Base Legal</th></tr></thead>
+              <tbody>
+                <tr><td>Autos y Decretos</td><td>Reposición ordinaria</td><td><span class="days-badge">5 días</span></td><td>Art. 181 CPC</td></tr>
+                <tr><td>Sent. Interlocutorias (casos específicos)</td><td>Reposición especial</td><td><span class="days-badge">3 días</span></td><td>Art. 181 CPC</td></tr>
+                <tr><td>Interlocutorias / Autos</td><td>Apelación (o subsidiaria)</td><td><span class="days-badge">5 días</span></td><td>Art. 189 CPC</td></tr>
+                <tr class="bold-row"><td>Sentencia Definitiva 1ª instancia</td><td>Apelación</td><td><span class="days-badge">10 días</span></td><td>Art. 189 CPC</td></tr>
+                <tr class="bold-row"><td>Sentencia Definitiva / término</td><td>Casación forma o fondo</td><td><span class="days-badge">15 días</span></td><td>Art. 770 CPC</td></tr>
+                <tr><td>Resolución no apelable (falta/abuso)</td><td>Recurso de Queja</td><td><span class="days-badge">5 días</span></td><td>Auto Acordado CS</td></tr>
+                <tr><td>Resolución que deniega apelación</td><td>Recurso de Hecho</td><td><span class="days-badge">5 días</span></td><td>Art. 203 CPC</td></tr>
+                <tr><td>Citación para oír sentencia</td><td>Reposición</td><td><span class="days-badge">3 días</span></td><td>Art. 432 CPC</td></tr>
+                <tr><td>Incidentes</td><td>Traslado</td><td><span class="days-badge">3 días</span></td><td>Art. 89 CPC</td></tr>
+              </tbody>
+            </table>
+            <p style="font-size:10px;color:var(--text-3);margin:14px 0 10px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;">Constitucionales — Días corridos</p>
+            <table class="ref-table">
+              <thead><tr><th>Acción</th><th>Plazo</th><th>Nota</th></tr></thead>
+              <tbody>
+                <tr class="bold-row"><td>Recurso de Protección</td><td><span class="days-badge">30 días corridos</span></td><td>Desde el acto u omisión / conocimiento</td></tr>
+                <tr><td>Recurso de Amparo</td><td><span class="days-badge">Sin plazo</span></td><td>Mientras subsista la amenaza</td></tr>
+                <tr><td>Apelación de Protección/Amparo</td><td><span class="days-badge">5 días corridos</span></td><td>Ante la Corte Suprema</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="accordion" id="manual-cierre">
+        <button class="accordion-trigger" onclick="toggleAcc('body-3', this)">
+          <div class="accordion-trigger-left">
+            <span>🏁</span> Cierre de Causa y Sentencia
+          </div>
+          <svg class="accordion-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+        </button>
+        <div id="body-3" class="accordion-body">
+          <div class="accordion-inner">
+            <table class="ref-table">
+              <thead><tr><th>Hito</th><th>Plazo</th><th>Base Legal</th><th>Nota</th></tr></thead>
+              <tbody>
+                <tr><td>Observaciones a la Prueba</td><td><span class="days-badge">10 días</span></td><td>Art. 343 CPC</td><td>Desde vencimiento del probatorio</td></tr>
+                <tr><td>Reposición contra Citación a Oír Sent.</td><td><span class="days-badge">3 días</span></td><td>Art. 432 CPC</td><td>Tras esta resolución, preclusión total</td></tr>
+                <tr><td>Medidas para Mejor Resolver</td><td><span class="days-badge">20 días</span></td><td>Art. 159 CPC</td><td>Suspenden el plazo de sentencia</td></tr>
+                <tr class="bold-row"><td>Sentencia — Juicio Ordinario</td><td><span class="days-badge">60 días</span></td><td>Art. 162 CPC</td><td>Plazo del tribunal</td></tr>
+                <tr><td>Sentencia — Juicio Sumario</td><td><span class="days-badge">10 días</span></td><td>Art. 688 CPC</td><td>Plazo del tribunal</td></tr>
+                <tr><td>Sentencia — Juicio Ejecutivo</td><td><span class="days-badge">10 días</span></td><td>Art. 474 CPC</td><td>Plazo del tribunal</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="accordion" id="manual-alertas">
+        <button class="accordion-trigger" onclick="toggleAcc('body-4', this)">
+          <div class="accordion-trigger-left">
+            <span>⚡</span> Alertas Logísticas — Red Flags
+          </div>
+          <svg class="accordion-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+        </button>
+        <div id="body-4" class="accordion-body">
+          <div class="accordion-inner" style="display:flex;flex-direction:column;gap:10px;">
+            <div style="background:var(--red-light);border:1px solid var(--border-strong);border-radius:8px;padding:10px 12px;">
+              <div style="font-size:10px;font-weight:600;color:var(--red-text);text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px;">Apelación Subsidiaria Obligatoria</div>
+              <p style="font-size:12px;">Si interpone Reposición contra una sentencia interlocutoria, <strong>debe incluir apelación en subsidio</strong> en el mismo escrito y dentro del mismo plazo. Si no lo hace, pierde el recurso de apelación.</p>
+            </div>
+            <div style="background:var(--blue-light);border:1px solid var(--border-strong);border-radius:8px;padding:10px 12px;">
+              <div style="font-size:10px;font-weight:600;color:var(--blue-text);text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px;">Falla Técnica OJV — Ley 20.886</div>
+              <p style="font-size:12px;">Si el portal del Poder Judicial (PJUD/OJV) presenta caída el último día del plazo, la ley permite presentar el escrito el día hábil siguiente. Guarde pantallazos del error como respaldo.</p>
+            </div>
+            <div style="background:var(--amber-light);border:1px solid var(--border-strong);border-radius:8px;padding:10px 12px;">
+              <div style="font-size:10px;font-weight:600;color:var(--amber-text);text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px;">Pluralidad de Demandados — Art. 260 CPC</div>
+              <p style="font-size:12px;">Si hay varios demandados con distintos domicilios, el emplazamiento vence cuando expira el <strong>último plazo</strong>. Use el plazo más largo para calcular el vencimiento común.</p>
+            </div>
+            <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 12px;">
+              <div style="font-size:10px;font-weight:600;color:var(--text-2);text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px;">Doble Notificación</div>
+              <p style="font-size:12px;">Si una sentencia se notifica por Estado Diario y luego por Cédula, el plazo corre siempre desde la <strong>primera notificación válida</strong>. No confíe en la fecha de la notificación posterior.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+
+
+    </div>
+  </div>
+
+  <!-- RIGHT PANEL -->
+  <div style="display:flex;flex-direction:column;gap:16px;">
+
+    <div class="result-card">
+      <div class="result-card-header">
+        <span class="result-card-title">Resultado del Cómputo</span>
+        <div id="party-badge"></div>
+      </div>
+
+      <div id="result-empty" class="result-empty">
+        <div class="result-empty-icon">📋</div>
+        <div>Configure los parámetros y presione <strong>Calcular</strong></div>
+      </div>
+
+      <div id="result-content" class="result-content animate-in" style="display:none;">
+        <div id="day1-section" style="margin-bottom:14px;"></div>
+        <div id="deadline-section"></div>
+        <div id="countdown-section"></div>
+        <div id="strategy-section"></div>
+        <div id="next-chain-section"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header" style="padding:12px 16px;">
+        <h2 style="font-size:11px;">🛡️ Gestión de Riesgos</h2>
+      </div>
+      <div class="card-body" style="padding:14px 16px;">
+        <div class="risk-box">
+          <div class="risk-box-title">Recordatorios clave</div>
+          <div class="risk-item"><div class="risk-dot"></div><span>Presentar escritos antes de las <strong>20:00 hrs</strong> en OJV.</span></div>
+          <div class="risk-item"><div class="risk-dot"></div><span>Verificar estado de causa el día anterior al vencimiento.</span></div>
+          <div class="risk-item"><div class="risk-dot"></div><span>Los feriados legales chilenos ya están incorporados al cómputo (2024–2027).</span></div>
+          <div class="risk-item"><div class="risk-dot"></div><span>Sábados <strong>son hábiles</strong> en materia civil (Art. 66 CPC) — sí corren plazos.</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- HISTORIAL -->
+    <div id="history-container" style="display:none;">
+      <div class="history-title">Historial de esta sesión</div>
+      <div id="history-list"></div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  let currentParty = '';
+  const sessionHistory = [];
+
+  // ─── DATA: Procedimiento → Etapa → Trámite ───────────────────────────────────
+
+  // ─── DATA: Procedimiento → Etapa → Trámite ───────────────────────────────────
+
+  // ─── DATA: Procedimiento → Etapa → Trámite ───────────────────────────────────
+  // Fuentes verificadas: texto del CPC (BCN), doctrina TodoLex/DiarioConstitucional.
+  // Los campos "desde" describen el dies a quo conforme a la ley.
+  // Prefijos en desde: sin prefijo = verificado en texto legal directo.
+  //   "⚠ Verificar:" = matiz o excepción relevante que depende del caso concreto.
+
+  const etapas = {
+    ordinario: [
+      { val:'emplazamiento', text:'Emplazamiento', hint:'Art. 258–260 CPC — período para contestar la demanda o interponer dilatorias',
+        tramites:[
+          { val:"15",    text:"Contestar Demanda — misma comuna (15d)",
+            for:"demandado", hint:"Art. 258 inc. 1° CPC",
+            desde:"Notificación personal de la demanda al demandado, practicada dentro de la <strong>comuna que sirve de asiento al tribunal</strong> (Art. 258 inc. 1° CPC)." },
+          { val:"18",    text:"Contestar Demanda — mismo territorio, fuera de la comuna (18d)",
+            for:"demandado", hint:"Art. 258 inc. 2° CPC",
+            desde:"Notificación personal de la demanda al demandado, practicada <strong>fuera de los límites de la comuna asiento del tribunal pero dentro del mismo territorio jurisdiccional</strong> (Art. 258 inc. 2° CPC)." },
+          { val:"tabla", text:"Contestar Demanda — territorio diverso o extranjero (18d + tabla)",
+            for:"demandado", hint:"Art. 259 CPC — ingrese días adicionales de tabla abajo",
+            desde:"Notificación personal de la demanda al demandado en <strong>territorio jurisdiccional diverso o fuera de la República</strong>. El aumento lo fija la tabla que forma la Corte Suprema cada 5 años (Art. 259 CPC). ⚠ Verificar: consulte la tabla vigente de la CS para determinar los días exactos según la ciudad." },
+          { val:"6_dil", text:"Excepciones Dilatorias — 6d",
+            for:"demandado", hint:"Art. 305 CPC",
+            desde:"Notificación de la demanda. Las dilatorias deben oponerse <strong>antes de contestar y dentro del mismo término de emplazamiento</strong> (Art. 305 CPC). ⚠ Verificar: si se oponen dilatorias, el plazo para contestar se cuenta desde la notificación de la resolución que las rechaza (Art. 308 CPC)." },
+        ]},
+      { val:'discusion', text:'Discusión', hint:'Art. 311 CPC — réplica y dúplica tras la contestación',
+        tramites:[
+          { val:"6_rep", text:"Réplica del Demandante — 6d",
+            for:"demandante", hint:"Art. 311 CPC",
+            desde:"Notificación por <strong>Estado Diario</strong> de la resolución que tiene por contestada la demanda (o por evacuado el trámite en rebeldía del demandado). Plazo fatal (Art. 64 CPC)." },
+          { val:"6_dup", text:"Dúplica del Demandado — 6d",
+            for:"demandado", hint:"Art. 311 CPC",
+            desde:"Notificación por <strong>Estado Diario</strong> de la resolución que tiene por evacuada la Réplica. Plazo fatal (Art. 64 CPC)." },
+        ]},
+      { val:'prueba', text:'Prueba', hint:'Art. 327–328 CPC — término probatorio ordinario',
+        tramites:[
+          { val:"5_test", text:"Lista de Testigos / Minuta de Puntos — 5d",
+            for:"both", hint:"Art. 320 CPC — dentro de los primeros 5 días del probatorio",
+            desde:"<strong>Inicio del término probatorio ordinario (Día 1)</strong>, conforme a la regla del Art. 320 CPC. ⚠ Este es un sub-plazo interno: los 5 días corren desde el mismo día 1 del probatorio, no desde una notificación separada." },
+          { val:"20",     text:"Término Probatorio Ordinario — 20d",
+            for:"both", hint:"Art. 328 CPC",
+            desde:"<strong>Caso normal:</strong> última notificación <strong>por cédula</strong> del auto de prueba a las partes (Art. 327 inc. 1° CPC).<br><strong>Si hay reposición:</strong> notificación por <strong>Estado Diario</strong> de la resolución que falla la última reposición contra el auto de prueba (Art. 320 CPC). ⚠ No suspende en caso alguno, salvo acuerdo de todas las partes (Art. 339 CPC)." },
+          { val:"3_tac",  text:"Prueba de Tachas de Testigos — 3d",
+            for:"both", hint:"Art. 373 CPC",
+            desde:"<strong>Examen del testigo tachado</strong> ante el tribunal. El plazo de 3 días es especial y corre desde ese acto procesal (Art. 373 CPC)." },
+        ]},
+      { val:'cierre', text:'Cierre y Sentencia', hint:'Art. 432 CPC — desde la citación para oír sentencia',
+        tramites:[
+          { val:"3_cit",  text:"Reposición contra Citación a Oír Sentencia — 3d",
+            for:"both", hint:"Art. 432 CPC",
+            desde:"Notificación por <strong>Estado Diario</strong> de la resolución que cita a las partes para oír sentencia (Art. 432 CPC). ⚠ Tras este plazo opera la preclusión: no se admiten escritos ni pruebas, salvo nulidad procesal muy calificada." },
+          { val:"20_mmr", text:"Medidas para Mejor Resolver — 20d",
+            for:"both", hint:"Art. 159 CPC — plazo del tribunal para ejecutarlas",
+            desde:"Fecha de la <strong>resolución del tribunal que decreta la medida para mejor resolver</strong> (Art. 159 CPC). Suspende el plazo del tribunal para dictar sentencia hasta su cumplimiento o hasta que venza el plazo de 20 días." },
+        ]},
+      { val:'recursos_ord', text:'Recursos', hint:'Art. 181, 189, 203, 770 CPC — impugnaciones',
+        tramites:[
+          { val:"5_rec",     text:"Reposición Ordinaria — autos y decretos (5d)",
+            for:"both", hint:"Art. 181 CPC",
+            desde:"Notificación por <strong>Estado Diario</strong> de la resolución impugnada (Art. 181 CPC). Es la regla general para autos y decretos." },
+          { val:"3_rep_esp", text:"Reposición Especial — interlocutorias (3d)",
+            for:"both", hint:"Art. 181 CPC",
+            desde:"Notificación de la <strong>sentencia interlocutoria</strong> impugnada, en los casos específicos que contempla la ley. ⚠ Verificar: incluya apelación subsidiaria en el mismo escrito si la resolución es apelable." },
+          { val:"5_ape_int", text:"Apelación — interlocutorias / autos (5d)",
+            for:"both", hint:"Art. 189 CPC",
+            desde:"Notificación de la resolución impugnada (Art. 189 CPC). ⚠ Si se interpone como subsidiaria a una reposición, corre desde la misma notificación de la resolución original, dentro del mismo plazo." },
+          { val:"10_rec",    text:"Apelación Sentencia Definitiva — 10d",
+            for:"both", hint:"Art. 189 CPC",
+            desde:"Notificación <strong>por cédula</strong> de la sentencia definitiva de primera instancia (Art. 189 CPC). La notificación por cédula es obligatoria para sentencias definitivas (Art. 48 CPC)." },
+          { val:"15_rec",    text:"Casación en la Forma o el Fondo — 15d",
+            for:"both", hint:"Art. 770 CPC",
+            desde:"Notificación de la <strong>sentencia definitiva o interlocutoria que pone término al juicio o hace imposible su continuación</strong> (Art. 770 CPC). ⚠ Verificar: la casación en el fondo solo procede contra sentencias de tribunales de segunda instancia." },
+          { val:"5_queja",   text:"Recurso de Queja — 5d",
+            for:"both", hint:"Auto Acordado CS sobre Recurso de Queja",
+            desde:"Notificación de la resolución que incurre en falta o abuso grave. ⚠ Verificar: solo procede cuando no existe otro recurso ordinario o extraordinario para impugnar la resolución. Plazo y procedencia según Auto Acordado vigente de la Corte Suprema." },
+          { val:"5_hecho",   text:"Recurso de Hecho — 5d",
+            for:"both", hint:"Art. 203 CPC",
+            desde:"Notificación de la resolución que <strong>deniega o concede indebidamente la apelación</strong>. Se interpone directamente ante el tribunal superior (Art. 203 CPC)." },
+        ]},
+    ],
+
+    menor_cuantia: [
+      { val:'emplazamiento_mc', text:'Emplazamiento', hint:'Art. 698 CPC',
+        tramites:[
+          { val:"8", text:"Contestar Demanda — 8d",
+            for:"demandado", hint:"Art. 698 CPC",
+            desde:"Notificación de la demanda al demandado (Art. 698 CPC). ⚠ Verificar: el procedimiento de menor cuantía aplica a juicios entre 10 y 500 UTM. Confirme la cuantía antes de usar este procedimiento." },
+        ]},
+      { val:'prueba_mc', text:'Prueba', hint:'Art. 702 CPC',
+        tramites:[
+          { val:"2",      text:"Lista de Testigos — 2d",
+            for:"both", hint:"Primeros 2 días del probatorio",
+            desde:"<strong>Inicio del término probatorio</strong> (Día 1). ⚠ Verificar: confirme en el expediente si la resolución que recibe la causa a prueba establece alguna regla particular sobre este plazo." },
+          { val:"8_prob", text:"Término Probatorio — 8d",
+            for:"both", hint:"Art. 702 CPC",
+            desde:"Notificación de la resolución que recibe la causa a prueba (Art. 702 CPC)." },
+        ]},
+      { val:'recursos_mc', text:'Recursos', hint:'Art. 181, 189 CPC',
+        tramites:[
+          { val:"5_rec",  text:"Reposición Ordinaria — 5d",
+            for:"both", hint:"Art. 181 CPC",
+            desde:"Notificación por <strong>Estado Diario</strong> de la resolución impugnada." },
+          { val:"10_rec", text:"Apelación Sentencia Definitiva — 10d",
+            for:"both", hint:"Art. 189 CPC",
+            desde:"Notificación <strong>por cédula</strong> de la sentencia definitiva (Art. 48 y 189 CPC)." },
+        ]},
+    ],
+
+    sumario: [
+      { val:'audiencia_sum', text:'Audiencia', hint:'Art. 683 CPC',
+        tramites:[
+          { val:"5_sum", text:"Audiencia Única — 5° día hábil",
+            for:"demandado", hint:"Art. 683 CPC",
+            desde:"Notificación de la demanda al demandado. La audiencia se fija para el <strong>5° día hábil siguiente a la notificación</strong> (Art. 683 CPC). ⚠ Verificar: el juez puede fijar un día distinto si las circunstancias lo requieren. Revise la resolución que provee la demanda." },
+        ]},
+      { val:'recursos_sum', text:'Recursos', hint:'Art. 181, 189, 770 CPC',
+        tramites:[
+          { val:"5_rec",  text:"Reposición Ordinaria — 5d",
+            for:"both", hint:"Art. 181 CPC",
+            desde:"Notificación por <strong>Estado Diario</strong> de la resolución impugnada." },
+          { val:"10_rec", text:"Apelación Sentencia Definitiva — 10d",
+            for:"both", hint:"Art. 189 CPC",
+            desde:"Notificación <strong>por cédula</strong> de la sentencia definitiva (Art. 48 y 189 CPC)." },
+          { val:"15_rec", text:"Casación — 15d",
+            for:"both", hint:"Art. 770 CPC",
+            desde:"Notificación de la sentencia de término. ⚠ Verificar: la casación procede en juicio sumario solo en los casos que la ley autoriza expresamente." },
+        ]},
+    ],
+
+    ejecutivo: [
+      { val:'requerimiento', text:'Requerimiento de Pago', hint:'Art. 459–461 CPC — el plazo corre desde el requerimiento, no desde la notificación de la demanda',
+        tramites:[
+          { val:"4",        text:"Oponer Excepciones — requerido en la comuna asiento del tribunal (4d)",
+            for:"demandado", hint:"Art. 459 inc. 1° CPC",
+            desde:"<strong>Requerimiento de pago</strong> practicado dentro de la <strong>comuna que sirve de asiento al tribunal</strong> (Art. 459 inc. 1° CPC). ⚠ El dies a quo es el acto del requerimiento de pago, no la notificación de la demanda ejecutiva — son actos distintos." },
+          { val:"8",        text:"Oponer Excepciones — requerido fuera de la comuna, mismo territorio (8d)",
+            for:"demandado", hint:"Art. 459 inc. 2° CPC — modificado por Ley 21.394",
+            desde:"<strong>Requerimiento de pago</strong> practicado dentro del territorio jurisdiccional del tribunal pero <strong>fuera de los límites de la comuna asiento</strong> (Art. 459 inc. 2° CPC, modificado por Ley 21.394 vigente desde nov. 2021)." },
+          { val:"tabla_ej", text:"Oponer Excepciones — requerido fuera del territorio, ante tribunal de la causa (8d + tabla)",
+            for:"demandado", hint:"Art. 460 CPC — ante el tribunal exhortante; ingrese días de tabla abajo",
+            desde:"<strong>Requerimiento de pago por exhorto</strong>, fuera del territorio jurisdiccional. El ejecutado elige oponer ante el <strong>tribunal de la causa</strong>: 8 días más tabla de emplazamiento (Art. 460 CPC). ⚠ Verificar tabla vigente de la CS para los días exactos según la ciudad." },
+          { val:"4_exhortado", text:"Oponer Excepciones — ante tribunal exhortado, misma comuna (4d)",
+            for:"demandado", hint:"Art. 461 CPC — alternativa al oponer ante tribunal de la causa",
+            desde:"<strong>Requerimiento de pago por exhorto</strong>. El ejecutado elige oponer ante el <strong>tribunal exhortado</strong>: 4 días si fue requerido en la misma comuna asiento del tribunal exhortado (Art. 461 CPC)." },
+          { val:"8_exhortado", text:"Oponer Excepciones — ante tribunal exhortado, fuera de su comuna (8d)",
+            for:"demandado", hint:"Art. 461 CPC — alternativa al oponer ante tribunal de la causa",
+            desde:"<strong>Requerimiento de pago por exhorto</strong>. El ejecutado elige oponer ante el <strong>tribunal exhortado</strong>: 8 días si fue requerido fuera de la comuna asiento del tribunal exhortado (Art. 461 CPC)." },
+        ]},
+      { val:'traslado_ej', text:'Traslado al Ejecutante', hint:'Art. 466 CPC — tras presentar las excepciones el ejecutante tiene 4 días para responder',
+        tramites:[
+          { val:"4_traslado_ej", text:"Traslado excepciones al ejecutante — 4d",
+            for:"demandante", hint:"Art. 466 CPC",
+            desde:"Notificación por <strong>Estado Diario</strong> de la resolución que confiere traslado de las excepciones al ejecutante (Art. 466 CPC). ⚠ Si el ejecutado no opone excepciones en el plazo legal, se omite este trámite y el tribunal dicta sentencia de remate." },
+        ]},
+      { val:'prueba_ej', text:'Prueba (si el juez admite excepciones)', hint:'Art. 468 CPC — probatorio ejecutivo de 10 días',
+        tramites:[
+          { val:"5_ej_test", text:"Lista de Testigos — 5d",
+            for:"both", hint:"Primeros 5 días del probatorio ejecutivo",
+            desde:"<strong>Inicio del término probatorio ejecutivo</strong> (Día 1). Sub-plazo interno de los 10 días del Art. 468 CPC. Corre desde la misma fecha de inicio del probatorio." },
+          { val:"10_ej",     text:"Término Probatorio Ejecutivo — 10d",
+            for:"both", hint:"Art. 468 CPC — aplicación supletoria Art. 469 y Art. 3° CPC",
+            desde:"<strong>Caso normal (sin reposición):</strong> última notificación <strong>por cédula</strong> del auto de prueba a las partes (Art. 468 CPC en relación con Art. 327 CPC).<br><strong>Si hay reposición contra el auto de prueba:</strong> notificación por <strong>Estado Diario</strong> de la resolución que falla la última reposición. ⚠ La misma regla del juicio ordinario aplica aquí por remisión del Art. 3° CPC. No existe en el ejecutivo término probatorio extraordinario para rendir prueba fuera del territorio — solo ordinario (10d) y extraordinario por acuerdo de ambas partes." },
+        ]},
+      { val:'recursos_ej', text:'Recursos', hint:'Art. 181, 189, 770 CPC',
+        tramites:[
+          { val:"5_rec",  text:"Reposición Ordinaria — 5d",
+            for:"both", hint:"Art. 181 CPC",
+            desde:"Notificación por <strong>Estado Diario</strong> de la resolución impugnada." },
+          { val:"10_rec", text:"Apelación Sentencia Definitiva — 10d",
+            for:"both", hint:"Art. 189 CPC",
+            desde:"Notificación <strong>por cédula</strong> de la sentencia definitiva (Art. 48 y 189 CPC)." },
+          { val:"15_rec", text:"Casación — 15d",
+            for:"both", hint:"Art. 770 CPC",
+            desde:"Notificación de la sentencia de término." },
+        ]},
+    ],
+
+    arriendo: [
+      { val:'audiencia_arr', text:'Audiencia Única', hint:'Art. 8 Ley 18.101',
+        tramites:[
+          { val:"5_arr", text:"Audiencia — 5° día hábil desde notificación",
+            for:"both", hint:"Art. 8 N°2 Ley 18.101",
+            desde:"Notificación de la demanda al arrendatario (Art. 8 N°2 Ley 18.101). La audiencia se celebra el <strong>5° día hábil siguiente</strong>. ⚠ Si el demandado desea reconvenir, la notificación debe haberse practicado con <strong>al menos 15 días hábiles de anticipación</strong> a la audiencia." },
+        ]},
+      { val:'recursos_arr', text:'Recursos', hint:'Art. 181, 189 CPC',
+        tramites:[
+          { val:"5_rec",  text:"Reposición Ordinaria — 5d",
+            for:"both", hint:"Art. 181 CPC",
+            desde:"Notificación por <strong>Estado Diario</strong> de la resolución impugnada." },
+          { val:"10_rec", text:"Apelación Sentencia Definitiva — 10d",
+            for:"both", hint:"Art. 189 CPC",
+            desde:"Notificación <strong>por cédula</strong> de la sentencia definitiva (Art. 48 y 189 CPC)." },
+        ]},
+    ],
+
+    recursos: [
+      { val:'recursos_gen', text:'Recursos Civiles', hint:'Días hábiles (L–S). Excluye domingos y feriados.',
+        tramites:[
+          { val:"5_rec",     text:"Reposición Ordinaria — autos y decretos (5d)",
+            for:"both", hint:"Art. 181 CPC",
+            desde:"Notificación por <strong>Estado Diario</strong> de la resolución impugnada (Art. 181 CPC)." },
+          { val:"3_rep_esp", text:"Reposición Especial — interlocutorias (3d)",
+            for:"both", hint:"Art. 181 CPC",
+            desde:"Notificación de la sentencia interlocutoria impugnada. ⚠ Verificar: este plazo especial de 3 días aplica solo en los casos expresamente previstos en la ley. Incluya apelación subsidiaria si la resolución es apelable." },
+          { val:"5_ape_int", text:"Apelación — interlocutorias / autos (5d)",
+            for:"both", hint:"Art. 189 CPC",
+            desde:"Notificación de la resolución impugnada (Art. 189 CPC). ⚠ Si se interpone subsidiariamente a una reposición, corre desde la misma notificación de la resolución original y en el mismo plazo." },
+          { val:"10_rec",    text:"Apelación Sentencia Definitiva — 10d",
+            for:"both", hint:"Art. 189 CPC",
+            desde:"Notificación <strong>por cédula</strong> de la sentencia definitiva de primera instancia (Art. 48 y 189 CPC)." },
+          { val:"15_rec",    text:"Casación en la Forma o el Fondo — 15d",
+            for:"both", hint:"Art. 770 CPC",
+            desde:"Notificación de la sentencia definitiva o interlocutoria que pone término al juicio (Art. 770 CPC). ⚠ La casación en el fondo solo procede contra sentencias dictadas por tribunales de segunda instancia (Cortes de Apelaciones)." },
+          { val:"5_queja",   text:"Recurso de Queja — 5d",
+            for:"both", hint:"Auto Acordado CS sobre Recurso de Queja",
+            desde:"Notificación de la resolución que incurre en falta o abuso grave. ⚠ Verificar procedencia: solo procede cuando no hay otro recurso ordinario o extraordinario disponible. Fundamento en Auto Acordado de la Corte Suprema." },
+          { val:"5_hecho",   text:"Recurso de Hecho — 5d",
+            for:"both", hint:"Art. 203 CPC",
+            desde:"Notificación de la resolución que deniega o concede indebidamente una apelación. Se interpone ante el tribunal superior (Art. 203 CPC)." },
+        ]},
+      { val:'recursos_const', text:'Acciones Constitucionales', hint:'Días corridos — se cuentan todos los días sin excepción',
+        tramites:[
+          { val:"30_prot", text:"Recurso de Protección — 30d corridos",
+            for:"both", hint:"Auto Acordado CS — plazo en días corridos", corridos:true,
+            desde:"Fecha del <strong>acto u omisión arbitraria o ilegal</strong>, o desde que el afectado tuvo <strong>conocimiento cierto</strong> del mismo (Auto Acordado CS). ⚠ El plazo es de días corridos — no hábiles. Se interpone ante la Corte de Apelaciones competente. La determinación del dies a quo puede ser discutida y depende de los hechos del caso." },
+        ]},
+    ],
+
+    otros: [
+      { val:'incidentes', text:'Incidentes y Traslados', hint:'Art. 89, 305, 373 CPC',
+        tramites:[
+          { val:"3",     text:"Traslado de Incidentes — 3d",
+            for:"both", hint:"Art. 89 CPC",
+            desde:"Notificación por <strong>Estado Diario</strong> de la resolución que confiere traslado del incidente (Art. 89 CPC)." },
+          { val:"6_dil", text:"Excepciones Dilatorias — 6d",
+            for:"demandado", hint:"Art. 305 CPC",
+            desde:"Notificación de la demanda. Deben oponerse <strong>dentro del término de emplazamiento, antes de contestar</strong> (Art. 305 CPC). ⚠ Si se rechaza la dilatoria, el plazo para contestar corre desde la notificación de esa resolución (Art. 308 CPC)." },
+          { val:"3_tac", text:"Prueba de Tachas de Testigos — 3d",
+            for:"both", hint:"Art. 373 CPC",
+            desde:"<strong>Examen del testigo tachado</strong> ante el tribunal (Art. 373 CPC). Es un plazo especial que no corre desde una notificación, sino desde el acto mismo del examen." },
+        ]},
+    ],
+  };
+
+
+  const strategyLogic = {
+    // EMPLAZAMIENTO
+    "15": {
+      demandado: "Plazo fatal para contestar la demanda (Art. 258 CPC). Si no contesta, el proceso sigue en rebeldía. Evalúe primero si procede oponer excepciones dilatorias (6 días, dentro del mismo emplazamiento).",
+      demandante: "Plazo de la contraparte. Si no contestan, solicite que se tenga por evacuado el trámite en rebeldía. Monitoree OJV diariamente."
+    },
+    "18": {
+      demandado: "Plazo ampliado por domicilio fuera de la comuna pero en el mismo territorio jurisdiccional (Art. 258 inc. 2° CPC). Verifique si aplica además tabla de emplazamiento.",
+      demandante: "La contraparte tiene 18 días. Mantenga monitoreo en OJV. Si el domicilio es en otra ciudad o región, podría aplicar adicionalmente la tabla de emplazamiento."
+    },
+    "tabla": {
+      demandado: "Plazo extendido por distancia según Tabla de Emplazamiento (Art. 259 CPC). Base: 18 días + días adicionales de la tabla vigente de la Corte Suprema.",
+      demandante: "Verifique la tabla vigente para confirmar los días adicionales. Si hay pluralidad de demandados con distintos domicilios, el plazo vence cuando expira el último (Art. 260 CPC)."
+    },
+    // DISCUSIÓN
+    "6_rep": {
+      demandante: "Plazo fatal para presentar la Réplica (Art. 311 CPC). Amplíe los argumentos de la demanda y rebata la contestación.",
+      demandado: "Plazo de la contraparte para Réplica. Prepare la Dúplica anticipadamente."
+    },
+    "6_dup": {
+      demandado: "Plazo fatal para presentar la Dúplica (Art. 311 CPC). Último escrito de discusión antes de la prueba. Sea exhaustivo.",
+      demandante: "Plazo de la contraparte para Dúplica. Tras esto, el tribunal debería recibir la causa a prueba."
+    },
+    // PRUEBA
+    "5_test": {
+      both: "<strong>⚠ Plazo crítico:</strong> La lista de testigos y minuta de puntos deben presentarse dentro de los primeros 5 días del término probatorio (Art. 320 CPC). Sin lista, no hay prueba testimonial. Presente al día 4 como máximo."
+    },
+    "20": {
+      both: "Término probatorio ordinario de 20 días hábiles (Art. 328 CPC). Dies a quo: desde la última notificación por cédula del auto de prueba. Si hay reposición contra el auto de prueba, el plazo corre desde que se resuelva."
+    },
+    // CIERRE
+    "3_cit": {
+      both: "Reposición contra la resolución de Citación para Oír Sentencia (Art. 432 CPC). Tras este plazo, preclusión casi total: no se admiten escritos ni pruebas. Interponga solo si hay vicios de procedimiento."
+    },
+    "20_mmr": {
+      both: "El juez decretó Medidas para Mejor Resolver (Art. 159 CPC). Deben ejecutarse en 20 días hábiles. El plazo de la sentencia queda suspendido hasta su cumplimiento o vencimiento."
+    },
+    // MENOR CUANTÍA
+    "8": {
+      demandado: "Plazo breve para contestar en menor cuantía (Art. 698 CPC). Proceso sumario: los trámites son más concentrados.",
+      demandante: "Monitoree la contestación de la contraparte en OJV."
+    },
+    "8_prob": { both: "Término probatorio reducido en menor cuantía (Art. 702 CPC). Priorice la prueba más relevante." },
+    "2": { both: "Lista de testigos en menor cuantía. Plazo muy breve: preséntela el primer día del probatorio." },
+    // SUMARIO
+    "5_sum": {
+      demandado: "La audiencia de contestación, conciliación y prueba se celebra el 5° día hábil desde la notificación (Art. 683 CPC). Prepare su defensa completa para ese único acto.",
+      demandante: "La audiencia es el 5° día hábil. Tenga toda su prueba lista. El tribunal puede dictar sentencia en la misma audiencia o dentro de los 10 días siguientes."
+    },
+    // EJECUTIVO
+    "4": {
+      demandado: "Plazo muy breve: 4 días desde el requerimiento de pago para oponer excepciones (Art. 459 inc. 1° CPC). Actúe de inmediato — todas las excepciones deben oponerse en un mismo escrito (Art. 465 CPC). Sin oposición, el tribunal dicta sentencia de remate.",
+      demandante: "Si no se oponen excepciones en 4 días, solicite que se proceda al pago o al remate según corresponda."
+    },
+    "8": {
+      demandado: "8 días desde el requerimiento practicado fuera de la comuna asiento del tribunal (Art. 459 inc. 2° CPC, modificado por Ley 21.394). Todas las excepciones deben oponerse en un mismo escrito (Art. 465 CPC).",
+      demandante: "Monitoree si la contraparte opone excepciones dentro del plazo. Si no lo hace, solicite se proceda al remate."
+    },
+    "tabla_ej": {
+      demandado: "8 días base + tabla de emplazamiento, oponiendo ante el tribunal de la causa (Art. 460 CPC). ⚠ También puede oponer ante el tribunal exhortado con plazos de 4 u 8 días (Art. 461 CPC) — elija la opción que más le convenga.",
+      demandante: "Plazo ampliado por exhorto. Verifique la tabla de emplazamiento vigente para confirmar la fecha exacta."
+    },
+    "4_exhortado": {
+      demandado: "Opone excepciones ante el tribunal exhortado en 4 días (Art. 461 CPC). Esta es una alternativa a oponer ante el tribunal de la causa. Todas las excepciones en un mismo escrito (Art. 465 CPC).",
+      demandante: "El ejecutado optó por oponer ante el tribunal exhortado. Monitoree ese tribunal."
+    },
+    "8_exhortado": {
+      demandado: "Opone excepciones ante el tribunal exhortado en 8 días (Art. 461 CPC). Esta es una alternativa a oponer ante el tribunal de la causa. Todas las excepciones en un mismo escrito (Art. 465 CPC).",
+      demandante: "El ejecutado optó por oponer ante el tribunal exhortado con 8 días. Monitoree ese tribunal."
+    },
+    "4_traslado_ej": {
+      demandante: "Traslado de las excepciones: tiene 4 días para evacuar el traslado y responder a las excepciones opuestas (Art. 466 CPC). Si no evacúa, el tribunal igualmente resolverá.",
+      demandado: "El tribunal dio traslado de las excepciones al ejecutante. Si no responde en 4 días, el juez procederá igual."
+    },
+    "10_ej": {
+      both: "Término probatorio ejecutivo de 10 días hábiles (Art. 468 CPC). <strong>Dies a quo:</strong> última notificación por cédula del auto de prueba — o si hubo reposición, desde la notificación por Estado Diario de la resolución que falla la última reposición. Puede ampliarse hasta 10 días más a petición del acreedor, solicitada antes de vencer el plazo original. No existe término extraordinario para rendir prueba fuera del territorio (solo por acuerdo de partes). Lista de testigos: dentro de los primeros 5 días."
+    },
+    "5_ej_test": {
+      both: "Lista de testigos en juicio ejecutivo. Preséntela dentro de los primeros 5 días del probatorio o perderá la prueba testimonial."
+    },
+    // ARRIENDO
+    "5_arr": {
+      both: "<strong>⚠ Audiencia única (Art. 8 N°2 Ley 18.101):</strong> contestación + conciliación + prueba en el 5° día hábil. Lista de testigos: antes de las <span style='color:var(--red);font-weight:600;'>12:00 del día anterior</span>. Si hay reconvención, la notificación debió hacerse con al menos 15 días de anticipación."
+    },
+    // RECURSOS
+    "3_rep_esp": {
+      both: "Reposición especial de 3 días contra sentencias interlocutorias en casos específicos (Art. 181 CPC). Si corresponde, incluya apelación subsidiaria en el mismo escrito."
+    },
+    "5_rec": {
+      both: "Reposición ordinaria de 5 días contra autos y decretos (Art. 181 CPC). Si la resolución es una sentencia interlocutoria, interponga además apelación subsidiaria obligatoriamente."
+    },
+    "5_ape_int": {
+      both: "Apelación de 5 días contra sentencias interlocutorias y autos (Art. 189 CPC). Puede interponerse subsidiariamente a una reposición, en el mismo escrito y plazo."
+    },
+    "10_rec": {
+      both: "Apelación de sentencia definitiva de 1ª instancia (Art. 189 CPC). Redacte con todos los fundamentos de hecho y derecho. La Corte de Apelaciones resolverá."
+    },
+    "15_rec": {
+      both: "Casación en la forma o el fondo (Art. 770 CPC). Debe invocar la causal legal específica. Es un recurso de derecho estricto: evalúe con detención antes de interponerlo."
+    },
+    "5_queja": {
+      both: "Recurso de queja de 5 días (Auto Acordado CS). Procede contra resoluciones con falta o abuso grave que no sean apelables. Se interpone ante el superior jerárquico."
+    },
+    "5_hecho": {
+      both: "Recurso de hecho de 5 días (Art. 203 CPC). Procede cuando el tribunal deniega indebidamente una apelación. Se interpone directamente ante el tribunal superior."
+    },
+    "30_prot": {
+      both: "Recurso de protección de 30 días corridos (Auto Acordado CS). Plazo en días corridos — no hábiles. Corre desde el acto u omisión, o desde que la parte tuvo conocimiento. Se interpone ante la Corte de Apelaciones competente."
+    },
+    // OTROS
+    "3": {
+      both: "Traslado de incidentes de 3 días (Art. 89 CPC). El tribunal resolverá de plano o, si requiere prueba, abrirá un término incidental de 8 días."
+    },
+    "6_dil": {
+      demandado: "Excepciones dilatorias de 6 días (Art. 305 CPC). Se oponen dentro del término de emplazamiento, antes de contestar. Corrigen vicios de procedimiento sin entrar al fondo.",
+      demandante: "La contraparte tiene 6 días para oponer excepciones dilatorias. Si las interpone, prepare el escrito de contestación a ellas."
+    },
+    "3_tac": {
+      both: "Prueba de tachas de testigos: 3 días tras el examen de los testigos tachados (Art. 373 CPC). La inhabilidad debe acreditarse dentro de este plazo especial."
+    }
+  };
+
+  // ─── FERIADOS CHILE ──────────────────────────────────────────────────────────
+  // Fuente: Ley 2.977, Ley 19.973 y calendario oficial BCN
+  // Incluye 2024–2027 para cubrir plazos futuros
+  const FERIADOS_CL = new Set([
+    // 2024
+    '2024-01-01','2024-03-29','2024-03-30','2024-05-01','2024-05-21',
+    '2024-06-20','2024-06-29','2024-07-16','2024-08-15','2024-09-18',
+    '2024-09-19','2024-09-20','2024-10-12','2024-10-31','2024-11-01',
+    '2024-12-08','2024-12-25',
+    // 2025
+    '2025-01-01','2025-04-18','2025-04-19','2025-05-01','2025-05-21',
+    '2025-06-20','2025-06-29','2025-07-16','2025-08-15','2025-09-18',
+    '2025-09-19','2025-10-12','2025-10-31','2025-11-01','2025-11-15',
+    '2025-11-29','2025-12-08','2025-12-25',
+    // 2026
+    '2026-01-01','2026-04-03','2026-04-04','2026-05-01','2026-05-21',
+    '2026-06-21','2026-06-29','2026-07-16','2026-08-15','2026-09-18',
+    '2026-09-19','2026-10-12','2026-10-31','2026-11-01','2026-12-08',
+    '2026-12-25',
+    // 2027
+    '2027-01-01','2027-03-26','2027-03-27','2027-05-01','2027-05-21',
+    '2027-06-21','2027-06-28','2027-07-16','2027-08-15','2027-09-18',
+    '2027-09-19','2027-10-12','2027-10-31','2027-11-01','2027-12-08',
+    '2027-12-25',
+  ]);
+
+  function toDateKey(date) {
+    const y = date.getFullYear();
+    const m = String(date.getMonth()+1).padStart(2,'0');
+    const d = String(date.getDate()).padStart(2,'0');
+    return `${y}-${m}-${d}`;
+  }
+
+  // ─── UTILITIES ──────────────────────────────────────────────────────────────
+
+  // Excluye domingos y feriados legales chilenos (Art. 66 CPC)
+  // En materia civil, los SÁBADOS son días hábiles
+  function isBusinessDay(date) {
+    if (date.getDay() === 0) return false; // domingo
+    return !FERIADOS_CL.has(toDateKey(date));
+  }
+
+  function addBusinessDays(startDate, days) {
+    let current = new Date(startDate);
+    let added = 0;
+    while (added < days) {
+      current.setDate(current.getDate() + 1);
+      if (isBusinessDay(current)) added++;
+    }
+    return current;
+  }
+
+  function nextBusinessDay(date) {
+    let d = new Date(date);
+    d.setDate(d.getDate() + 1);
+    while (!isBusinessDay(d)) d.setDate(d.getDate() + 1);
+    return d;
+  }
+
+  function formatFull(date) {
+    return date.toLocaleDateString('es-CL', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+  }
+  function formatShort(date) {
+    return date.toLocaleDateString('es-CL', { day: '2-digit', month: '2-digit', year: 'numeric' });
+  }
+  function capitalize(str) { return str.charAt(0).toUpperCase() + str.slice(1); }
+
+  function daysUntil(date) {
+    const today = new Date(); today.setHours(0,0,0,0);
+    const target = new Date(date); target.setHours(0,0,0,0);
+    return Math.round((target - today) / 86400000);
+  }
+
+  // ─── UI LOGIC ────────────────────────────────────────────────────────────────
+
+  function setParty(party) {
+    currentParty = party;
+    document.getElementById('btn-demandante').classList.toggle('active', party === 'demandante');
+    document.getElementById('btn-demandado').classList.toggle('active', party === 'demandado');
+  }
+
+
+  function onProcChange() {
+    const cat = document.getElementById('proc-category').value;
+    const stageSel = document.getElementById('proc-stage');
+    const tramSel  = document.getElementById('proc-type');
+
+    // Reset stage
+    stageSel.innerHTML = '<option value="">Seleccione etapa…</option>';
+    stageSel.disabled = true;
+    // Reset trámite
+    tramSel.innerHTML = '<option value="">Primero elija etapa…</option>';
+    tramSel.disabled = true;
+
+    if (cat && etapas[cat]) {
+      etapas[cat].forEach(e => {
+        const o = document.createElement('option');
+        o.value = e.val; o.textContent = e.text;
+        if (e.hint) o.dataset.hint = e.hint;
+        stageSel.appendChild(o);
+      });
+      stageSel.disabled = false;
+    }
+
+    // Reset helpers and controls
+    document.getElementById('stage-helper').style.display = 'none';
+    document.getElementById('tramite-helper').style.display = 'none';
+    document.getElementById('desde-box').style.display = 'none';
+    document.getElementById('dilatorias-div').style.display = 'none';
+    document.getElementById('hubo-dilatorias').checked = false;
+    document.getElementById('dilatorias-warn').style.display = 'none';
+    document.getElementById('previa-warn').style.display = 'none';
+    document.getElementById('notif-44-warn').style.display = 'none';
+    document.getElementById('notif-type').value = '0';
+    document.getElementById('tabla-div').style.display = 'none';
+    document.getElementById('date-label').innerText = 'Fecha de Notificación';
+    document.getElementById('notif-options').style.display = '';
+    document.getElementById('prorroga-div').style.display = '';
+    document.getElementById('suspension-ui').style.display = '';
+    clearResult();
+  }
+
+  function onStageChange() {
+    const cat      = document.getElementById('proc-category').value;
+    const stageVal = document.getElementById('proc-stage').value;
+    const stageSel = document.getElementById('proc-stage');
+    const tramSel  = document.getElementById('proc-type');
+
+    // Show stage hint
+    const stageHelper = document.getElementById('stage-helper');
+    const stageHint = stageSel.options[stageSel.selectedIndex]?.dataset.hint;
+    if (stageHint) { stageHelper.textContent = stageHint; stageHelper.style.display = 'block'; }
+    else { stageHelper.style.display = 'none'; }
+
+    // Populate trámites
+    tramSel.innerHTML = '<option value="">Seleccione trámite…</option>';
+    tramSel.disabled = true;
+
+    const etapaData = etapas[cat]?.find(e => e.val === stageVal);
+    if (etapaData) {
+      etapaData.tramites.forEach(h => {
+        const o = document.createElement('option');
+        o.value = h.val; o.textContent = h.text;
+        o.dataset.for = h.for;
+        if (h.hint)    o.dataset.hint    = h.hint;
+        if (h.desde)   o.dataset.desde   = h.desde;
+        if (h.corridos) o.dataset.corridos = 'true';
+        tramSel.appendChild(o);
+      });
+      tramSel.disabled = false;
+    }
+
+    // Reset trámite-level controls
+    document.getElementById('tramite-helper').style.display = 'none';
+    document.getElementById('desde-box').style.display = 'none';
+    document.getElementById('dilatorias-div').style.display = 'none';
+    document.getElementById('hubo-dilatorias').checked = false;
+    document.getElementById('dilatorias-warn').style.display = 'none';
+    document.getElementById('previa-warn').style.display = 'none';
+    document.getElementById('tabla-div').style.display = 'none';
+    document.getElementById('date-label').innerText = 'Fecha de Notificación';
+    document.getElementById('notif-options').style.display = '';
+    document.getElementById('prorroga-div').style.display = '';
+    document.getElementById('suspension-ui').style.display = '';
+    clearResult();
+  }
+
+  function handleHitoChange() {
+    const sel = document.getElementById('proc-type');
+    const val = sel.value;
+    const opt = sel.options[sel.selectedIndex];
+
+    // Tabla de emplazamiento
+    const isTabla = val === 'tabla' || val === 'tabla_ej';
+    document.getElementById('tabla-div').style.display = isTabla ? 'block' : 'none';
+
+    // Base legal hint
+    const helper = document.getElementById('tramite-helper');
+    const hint = opt?.dataset.hint;
+    if (hint) { helper.textContent = hint; helper.style.display = 'block'; }
+    else { helper.style.display = 'none'; }
+
+    // Desde cuándo se cuenta — render HTML, style ⚠ warnings
+    const desdeBox  = document.getElementById('desde-box');
+    const desdeText = document.getElementById('desde-text');
+    const desde = opt?.dataset.desde;
+    if (desde) {
+      // Split on ⚠ to style warnings in amber
+      const styled = desde.replace(/(⚠[^<]*?)(<br>|$)/g,
+        '<span style="color:var(--amber-text);font-weight:500;">$1</span>$2');
+      desdeText.innerHTML = styled;
+      desdeBox.style.display = 'block';
+    } else { desdeBox.style.display = 'none'; }
+
+    // Corridos: hide hábil-specific controls
+    const isCorridos = opt?.dataset.corridos === 'true';
+    document.getElementById('notif-options').style.display  = isCorridos ? 'none' : '';
+    document.getElementById('prorroga-div').style.display   = isCorridos ? 'none' : '';
+    document.getElementById('suspension-ui').style.display  = isCorridos ? 'none' : '';
+    document.getElementById('date-label').innerText = isCorridos
+      ? 'Fecha del acto / conocimiento del agravio'
+      : 'Fecha de Notificación';
+
+    // Advertencia proactiva de resoluciones pendientes
+    // Se muestra para trámites cuyo dies a quo depende de que no haya resoluciones pendientes
+    const previaWarnMap = {
+      // ORDINARIO — probatorio
+      "20": "El término probatorio solo comienza a correr una vez notificado el auto de prueba a todas las partes. Antes de ingresar la fecha, verifique que: (1) no haya recursos de reposición pendientes contra el auto de prueba — si los hay, el plazo no corre hasta que se fallen; (2) la notificación por cédula se haya practicado a todas las partes.",
+      // ORDINARIO — réplica y dúplica
+      "6_rep": "El plazo de réplica solo corre una vez que el tribunal tiene por contestada la demanda (o por evacuado el trámite en rebeldía). Verifique que no haya excepciones dilatorias pendientes de fallo que suspendan el curso del proceso.",
+      "6_dup": "El plazo de dúplica corre desde que el tribunal tiene por evacuada la réplica. Verifique que no haya incidentes pendientes que hayan suspendido el curso de los autos.",
+      // EJECUTIVO — probatorio
+      "10_ej": "El término probatorio ejecutivo solo se abre si el tribunal declara <strong>admisibles</strong> las excepciones y las recibe a prueba. Antes de calcular, verifique que: (1) el tribunal ya resolvió el traslado al ejecutante (4 días, Art. 466 CPC); (2) el tribunal dictó resolución declarando admisibles las excepciones; (3) se ha notificado el auto de prueba. Si cualquiera de estos trámites está pendiente, el plazo aún no ha comenzado.",
+      // EJECUTIVO — excepciones
+      "4":        "Antes de calcular, verifique en el expediente que el requerimiento de pago efectivamente se practicó y consta en el cuaderno de apremio. El plazo corre desde el acto del requerimiento, no desde la notificación de la demanda.",
+      "8":        "Antes de calcular, verifique en el expediente que el requerimiento de pago efectivamente se practicó fuera de la comuna y consta en el cuaderno de apremio.",
+      "tabla_ej": "Antes de calcular, verifique que el exhorto fue recibido y el requerimiento practicado. Confirme también los días exactos de la tabla de emplazamiento vigente de la Corte Suprema según la ciudad.",
+      // MENOR CUANTÍA — probatorio
+      "8_prob": "Verifique que no haya recursos de reposición pendientes contra el auto de prueba. Si los hay, el plazo no corre hasta que se fallen.",
+      // PRUEBA — lista testigos (sub-plazo interno)
+      "5_test":    "Este plazo es un sub-plazo interno del probatorio — corre desde el mismo Día 1 del término probatorio. Ingrese la misma fecha de inicio del probatorio, no una nueva fecha de notificación.",
+      "5_ej_test": "Este plazo es un sub-plazo interno del probatorio ejecutivo — corre desde el Día 1 del término probatorio ejecutivo. Ingrese la misma fecha de inicio del probatorio.",
+      "2":         "Este plazo es un sub-plazo interno del probatorio de menor cuantía — corre desde el Día 1 del término probatorio. Ingrese la misma fecha de inicio del probatorio.",
+    };
+
+    const previaWarn = document.getElementById('previa-warn');
+    const previaText = document.getElementById('previa-warn-text');
+    if (val && previaWarnMap[val]) {
+      previaText.innerHTML = previaWarnMap[val];
+      previaWarn.style.display = 'block';
+    } else {
+      previaWarn.style.display = 'none';
+    }
+
+    // Advertencia de dilatorias — solo en trámites de contestar demanda
+    const esEmplazamiento = ['15','18','tabla','8','4','tabla_ej','4_exhortado','8_exhortado'].includes(val);
+    const dilatoriasDiv = document.getElementById('dilatorias-div');
+    dilatoriasDiv.style.display = esEmplazamiento ? 'block' : 'none';
+    if (!esEmplazamiento) {
+      document.getElementById('hubo-dilatorias').checked = false;
+      document.getElementById('dilatorias-warn').style.display = 'none';
+    }
+  }
+
+  function getHitoData(val) {
+    for (const cats of Object.values(etapas)) {
+      for (const etapa of cats) {
+        const found = etapa.tramites.find(h => h.val === val);
+        if (found) return found;
+      }
+    }
+    return null;
+  }
+
+
+  function onNotifChange() {
+    const val = document.getElementById('notif-type').value;
+    document.getElementById('notif-44-warn').style.display = val === '44' ? 'block' : 'none';
+  }
+
+  function onDilatoriasChange() {
+    const checked = document.getElementById('hubo-dilatorias').checked;
+    document.getElementById('dilatorias-warn').style.display = checked ? 'block' : 'none';
+    document.getElementById('contexto-hint').style.display = 'none';
+    document.getElementById('contexto-procesal').value = '';
+  }
+
+  function onContextoChange() {
+    const val = document.getElementById('contexto-procesal').value;
+    const hint = document.getElementById('contexto-hint');
+    const hints = {
+      rechazada: 'Use como fecha de referencia la notificación de la resolución que rechazó la dilatoria (por Estado Diario, Art. 308 CPC).',
+      subsanada: 'Use como fecha de referencia la notificación de la resolución que tuvo por subsanada/rectificada la demanda (por cédula o por Estado Diario según lo haya ordenado el tribunal, Art. 308 CPC). Este es el caso del Art. 44 que aplicó en su causa.',
+      acogida_termino: 'La excepción dilatoria puso término al juicio (ej. incompetencia absoluta). No hay plazo para contestar — evalúe otras acciones.'
+    };
+    if (val && hints[val]) { hint.textContent = hints[val]; hint.style.display = 'block'; }
+    else { hint.style.display = 'none'; }
+  }
+
+
+  function toggleAcc(id, btn) {
+    const body = document.getElementById(id);
+    body.classList.toggle('open');
+    const chevron = btn.querySelector('.accordion-chevron');
+    if (chevron) chevron.style.transform = body.classList.contains('open') ? 'rotate(180deg)' : '';
+  }
+
+  function clearResult() {
+    document.getElementById('result-empty').style.display = 'block';
+    document.getElementById('result-content').style.display = 'none';
+    document.getElementById('party-badge').innerHTML = '';
+  }
+
+  // ─── CALCULATE ───────────────────────────────────────────────────────────────
+
+  function calculateDeadline() {
+    const refVal = document.getElementById('ref-date').value;
+    if (!refVal) { alert('Por favor ingrese una fecha de referencia.'); return; }
+
+    let baseDate = new Date(refVal + 'T00:00:00');
+    const hitoSel = document.getElementById('proc-type');
+    const hitoVal = hitoSel.value;
+    if (!hitoVal) { alert('Por favor seleccione el trámite a realizar.'); return; }
+
+    const hitoFor = hitoSel.options[hitoSel.selectedIndex].dataset.for;
+    const hitoData = getHitoData(hitoVal);
+    const isCorridos = hitoData && hitoData.corridos;
+
+    let deadline, diaUno = null;
+
+    if (isCorridos) {
+      const days = parseInt(hitoVal.split('_')[0]);
+      deadline = new Date(baseDate);
+      deadline.setDate(deadline.getDate() + days);
+      document.getElementById('party-badge').innerHTML = '<span class="badge badge-both">Plazo para ambos</span>';
+      const logic = strategyLogic[hitoVal] || {};
+      const strategy = logic[currentParty] || logic.both || 'Revise el plazo con atención.';
+      showCivilResult(null, deadline, strategy, false, true, hitoVal);
+      addToHistory(hitoSel.options[hitoSel.selectedIndex].text, deadline);
+      return;
+    }
+
+    const notifType = document.getElementById('notif-type').value;
+    // Art. 44 tiene el mismo dies a quo que la notificación personal/cédula
+    const notifVal = notifType === '44' ? '0' : notifType;
+    if (notifVal === '3') baseDate = addBusinessDays(baseDate, 3);
+    diaUno = new Date(baseDate);
+    if (notifVal !== 'tácita') diaUno = nextBusinessDay(diaUno);
+
+    let tablaExtra = parseInt(document.getElementById('tabla-days').value || 0);
+    let days;
+    if (hitoVal === 'tabla') days = 18 + tablaExtra;
+    else if (hitoVal === 'tabla_ej') days = 8 + tablaExtra;
+    else days = parseInt(hitoVal.split('_')[0]);
+
+    const suspension = parseInt(document.getElementById('suspension-days').value) || 0;
+    deadline = addBusinessDays(diaUno, (days + suspension) - 1);
+
+    if (document.getElementById('last-day-holiday').checked) {
+      while (!isBusinessDay(deadline)) deadline.setDate(deadline.getDate() + 1);
+    }
+
+    let badge = '';
+    if (hitoFor === 'both') badge = '<span class="badge badge-both">Plazo para ambos</span>';
+    else if (hitoFor === currentParty) badge = '<span class="badge badge-own">Su plazo fatal</span>';
+    else badge = '<span class="badge badge-opp">Plazo contraparte</span>';
+    document.getElementById('party-badge').innerHTML = badge;
+
+    const logic = strategyLogic[hitoVal] || {};
+    const strategy = logic[currentParty] || logic.both || 'Mantenga monitoreo activo en la Oficina Judicial Virtual.';
+    const isCritical = ['5_arr','5_test','5_ej_test'].includes(hitoVal);
+
+    showCivilResult(diaUno, deadline, strategy, isCritical, false, hitoVal);
+    addToHistory(hitoSel.options[hitoSel.selectedIndex].text, deadline);
+  }
+
+  function showCivilResult(diaUno, deadline, strategy, isCritical, isCorridos, hitoVal) {
+    const remaining = daysUntil(deadline);
+    let urgencyClass = 'ok', urgencyText = 'Tiempo disponible';
+    if (remaining < 0) { urgencyClass = 'urgent'; urgencyText = 'Plazo vencido'; }
+    else if (remaining <= 3) { urgencyClass = 'urgent'; urgencyText = 'Urgente'; }
+    else if (remaining <= 7) { urgencyClass = 'warn'; urgencyText = 'Próximo'; }
+
+    const absRemaining = Math.abs(remaining);
+
+    document.getElementById('day1-section').innerHTML = diaUno
+      ? `<div class="day1-label">Día 1 del plazo</div><div class="day1-date">${capitalize(formatFull(diaUno))}</div>`
+      : `<div class="day1-label" style="color:var(--amber-text);">Días corridos — sin exclusión de feriados ni fines de semana</div>`;
+
+    document.getElementById('deadline-section').innerHTML = `
+      <div class="deadline-block">
+        <div class="deadline-label">Vencimiento fatal</div>
+        <div class="deadline-date">${capitalize(deadline.toLocaleDateString('es-CL', { day: 'numeric', month: 'long', year: 'numeric' }))}</div>
+        <div class="deadline-weekday">${capitalize(deadline.toLocaleDateString('es-CL', { weekday: 'long' }))}</div>
+      </div>`;
+
+    document.getElementById('countdown-section').innerHTML = `
+      <div class="countdown-bar ${urgencyClass}" style="margin-bottom:14px;">
+        <div class="countdown-left">${urgencyText}</div>
+        <div>
+          <span class="countdown-days">${absRemaining}</span>
+          <span class="countdown-unit">${remaining < 0 ? 'días transcurridos' : remaining === 0 ? '' : 'días'}</span>
+        </div>
+      </div>`;
+
+    document.getElementById('strategy-section').innerHTML = `
+      <div class="strategy-box ${isCritical ? 'critical' : ''}">
+        <div class="strategy-label">Estrategia procesal</div>
+        <div class="strategy-text">${strategy}</div>
+      </div>`;
+
+    // Observaciones automáticas — si el trámite es un probatorio
+    const obsSection = document.getElementById('next-chain-section');
+    const obs = obsMap[hitoVal];
+    if (obs) {
+      const obsDeadline = calcObsDeadline(deadline, obs.dias);
+      const obsRemaining = daysUntil(obsDeadline);
+      const obsAbs = Math.abs(obsRemaining);
+      const obsUrgency = obsRemaining < 0 ? 'urgent' : obsRemaining <= 3 ? 'urgent' : obsRemaining <= 7 ? 'warn' : 'ok';
+      obsSection.innerHTML = `
+        <div style="margin-top:4px;">
+          <div style="font-size:10px;font-weight:600;color:var(--text-3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px;margin-top:6px;">A continuación — automático</div>
+          <div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:14px;display:flex;flex-direction:column;gap:8px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;">
+              <div>
+                <div style="font-size:12px;font-weight:600;color:var(--text);">Observaciones a la Prueba — ${obs.dias}d</div>
+                <div style="font-size:10px;color:var(--text-3);margin-top:2px;">${obs.art}</div>
+              </div>
+              <div class="countdown-bar ${obsUrgency}" style="margin:0;padding:6px 10px;min-width:80px;text-align:center;">
+                <div style="font-family:'DM Mono',monospace;font-size:16px;font-weight:500;">${obsAbs}</div>
+                <div style="font-size:9px;">${obsRemaining < 0 ? 'vencido' : 'días'}</div>
+              </div>
+            </div>
+            <div style="border-top:1px solid var(--border);padding-top:8px;">
+              <div style="font-size:10px;font-weight:600;color:var(--blue-text);text-transform:uppercase;letter-spacing:.04em;margin-bottom:3px;">Vencimiento</div>
+              <div style="font-size:13px;font-weight:600;color:var(--text);">${capitalize(obsDeadline.toLocaleDateString('es-CL', { weekday:'long', day:'numeric', month:'long', year:'numeric' }))}</div>
+              <div style="font-size:11px;color:var(--text-3);margin-top:4px;">${obs.nota}</div>
+            </div>
+          </div>
+        </div>`;
+    } else {
+      obsSection.innerHTML = '';
+    }
+
+    document.getElementById('result-empty').style.display = 'none';
+    const rc = document.getElementById('result-content');
+    rc.style.display = 'block';
+    rc.classList.remove('animate-in');
+    void rc.offsetWidth;
+    rc.classList.add('animate-in');
+  }
+
+
+  // ─── OBSERVACIONES AUTOMÁTICAS ───────────────────────────────────────────────
+  // Cuando se calcula un término probatorio, se muestran automáticamente
+  // las observaciones a la prueba como bloque secundario en el resultado.
+  // obsMap: { diasObs, artObs, nota }
+
+  const obsMap = {
+    "20":     { dias: 10, art: "Art. 343 CPC",  nota: "Desde el día siguiente al vencimiento del probatorio ordinario." },
+    "10_ej":  { dias: 6,  art: "Art. 469 CPC",  nota: "Desde el día siguiente al vencimiento del probatorio ejecutivo. Vencido este plazo el tribunal cita a oír sentencia de oficio." },
+    "8_prob": { dias: 6,  art: "Art. 704 CPC",  nota: "Desde el día siguiente al vencimiento del probatorio de menor cuantía." },
+  };
+
+  function calcObsDeadline(probDeadline, dias) {
+    // El día siguiente hábil al vencimiento del probatorio es el día 1 de observaciones
+    let diaUnoObs = nextBusinessDay(probDeadline);
+    return addBusinessDays(diaUnoObs, dias - 1);
+  }
+
+  // ─── HISTORY ─────────────────────────────────────────────────────────────────
+
+  function addToHistory(name, deadline) {
+    sessionHistory.unshift({ name: name.replace(/ — \d+d.*$/, '').replace(/ — .*$/, '').trim(), deadline });
+    if (sessionHistory.length > 5) sessionHistory.pop();
+    renderHistory();
+  }
+
+  function renderHistory() {
+    const container = document.getElementById('history-container');
+    const list = document.getElementById('history-list');
+    container.style.display = sessionHistory.length ? 'block' : 'none';
+    list.innerHTML = '';
+    sessionHistory.forEach(entry => {
+      const div = document.createElement('div');
+      div.className = 'history-item';
+      const remaining = daysUntil(entry.deadline);
+      const color = remaining < 0 ? 'var(--red)' : remaining <= 3 ? 'var(--red)' : remaining <= 7 ? 'var(--amber)' : 'var(--green)';
+      div.innerHTML = `
+        <div>
+          <div class="history-item-name">${entry.name}</div>
+          <div class="history-item-left">${remaining < 0 ? 'Vencido' : remaining === 0 ? 'Hoy' : remaining + 'd restantes'}</div>
+        </div>
+        <div class="history-item-date" style="color:${color}">${formatShort(entry.deadline)}</div>`;
+      list.appendChild(div);
+    });
+  }
+
+  // ─── INIT ─────────────────────────────────────────────────────────────────────
+
+  document.getElementById('current-date').innerText = new Date().toLocaleDateString('es-CL', {
+    weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+  });
+
+  // ─── MODO OSCURO ──────────────────────────────────────────────────────────────
+  function applyDark(isDark) {
+    document.documentElement.classList.toggle('dark', isDark);
+    document.getElementById('dark-label').textContent = isDark ? 'Modo claro' : 'Modo oscuro';
+  }
+
+  function toggleDark() {
+    const isDark = !document.documentElement.classList.contains('dark');
+    applyDark(isDark);
+    try { localStorage.setItem('marlene-dark', isDark ? '1' : '0'); } catch(e) {}
+  }
+
+  // Aplicar preferencia guardada o preferencia del sistema operativo
+  (function() {
+    let saved;
+    try { saved = localStorage.getItem('marlene-dark'); } catch(e) {}
+    if (saved === '1') { applyDark(true); }
+    else if (saved === null && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+      applyDark(true);
+    }
+  })();
+</script>
+</body>
+</html>
