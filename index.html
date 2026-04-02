@@ -765,9 +765,6 @@
           { val:"20",     text:"Término Probatorio Ordinario — 20d",
             for:"both", hint:"Art. 328 CPC",
             desde:"<strong>Caso normal:</strong> última notificación <strong>por cédula</strong> del auto de prueba a las partes (Art. 327 inc. 1° CPC).<br><strong>Si hay reposición:</strong> notificación por <strong>Estado Diario</strong> de la resolución que falla la última reposición contra el auto de prueba (Art. 320 CPC). ⚠ No suspende en caso alguno, salvo acuerdo de todas las partes (Art. 339 CPC)." },
-          { val:"3_tac",  text:"Prueba de Tachas de Testigos — 3d",
-            for:"both", hint:"Art. 373 CPC",
-            desde:"<strong>Examen del testigo tachado</strong> ante el tribunal. El plazo de 3 días es especial y corre desde ese acto procesal (Art. 373 CPC)." },
         ]},
       { val:'cierre', text:'Cierre y Sentencia', hint:'Art. 432 CPC — desde la citación para oír sentencia',
         tramites:[
@@ -960,10 +957,7 @@
           { val:"6_dil", text:"Excepciones Dilatorias — 6d",
             for:"demandado", hint:"Art. 305 CPC",
             desde:"Notificación de la demanda. Deben oponerse <strong>dentro del término de emplazamiento, antes de contestar</strong> (Art. 305 CPC). ⚠ Si se rechaza la dilatoria, el plazo para contestar corre desde la notificación de esa resolución (Art. 308 CPC)." },
-          { val:"3_tac", text:"Prueba de Tachas de Testigos — 3d",
-            for:"both", hint:"Art. 373 CPC",
-            desde:"<strong>Examen del testigo tachado</strong> ante el tribunal (Art. 373 CPC). Es un plazo especial que no corre desde una notificación, sino desde el acto mismo del examen." },
-        ]},
+               ]},
     ],
   };
 
@@ -1084,9 +1078,6 @@
     "6_dil": {
       demandado: "Excepciones dilatorias de 6 días (Art. 305 CPC). Se oponen dentro del término de emplazamiento, antes de contestar. Corrigen vicios de procedimiento sin entrar al fondo.",
       demandante: "La contraparte tiene 6 días para oponer excepciones dilatorias. Si las interpone, prepare el escrito de contestación a ellas."
-    },
-    "3_tac": {
-      both: "Prueba de tachas de testigos: 3 días tras el examen de los testigos tachados (Art. 373 CPC). La inhabilidad debe acreditarse dentro de este plazo especial."
     }
   };
 
@@ -1433,9 +1424,17 @@
     }
 
     let badge = '';
-    if (hitoFor === 'both') badge = '<span class="badge badge-both">Plazo para ambos</span>';
-    else if (hitoFor === currentParty) badge = '<span class="badge badge-own">Su plazo fatal</span>';
-    else badge = '<span class="badge badge-opp">Plazo contraparte</span>';
+    if (hitoFor === 'both') {
+      badge = '<span class="badge badge-both">Plazo para ambos</span>';
+    } else if (hitoFor === 'demandante') {
+      if (currentParty === 'demandante') badge = '<span class="badge badge-own">Su plazo fatal</span>';
+      else if (currentParty === 'demandado') badge = '<span class="badge badge-opp">Plazo demandante</span>';
+      else badge = '<span class="badge badge-both">Plazo demandante</span>';
+    } else if (hitoFor === 'demandado') {
+      if (currentParty === 'demandado') badge = '<span class="badge badge-own">Su plazo fatal</span>';
+      else if (currentParty === 'demandante') badge = '<span class="badge badge-opp">Plazo demandado</span>';
+      else badge = '<span class="badge badge-both">Plazo demandado</span>';
+    }
     document.getElementById('party-badge').innerHTML = badge;
 
     const logic = strategyLogic[hitoVal] || {};
