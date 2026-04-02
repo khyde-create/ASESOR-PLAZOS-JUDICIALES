@@ -586,8 +586,6 @@
       <div id="result-content" class="result-content animate-in" style="display:none;">
         <div id="day1-section" style="margin-bottom:14px;"></div>
         <div id="deadline-section"></div>
-        <div id="strategy-section"></div>
-        <div id="next-chain-section"></div>
       </div>
     </div>
 
@@ -604,12 +602,6 @@
           <div class="risk-item"><div class="risk-dot"></div><span>Sábados <strong>son hábiles</strong> en materia civil (Art. 66 CPC) — sí corren plazos.</span></div>
         </div>
       </div>
-    </div>
-
-    <!-- HISTORIAL -->
-    <div id="history-container" style="display:none;">
-      <div class="history-title">Historial de esta sesión</div>
-      <div id="history-list"></div>
     </div>
 
     <!-- ALERTAS LOGÍSTICAS -->
@@ -744,7 +736,6 @@
 
 <script>
   let currentParty = '';
-  const sessionHistory = [];
 
   // ─── DATA: Procedimiento → Etapa → Trámite ───────────────────────────────────
 
@@ -985,124 +976,6 @@
   };
 
 
-  const strategyLogic = {
-    // EMPLAZAMIENTO
-    "15": {
-      demandado: "Plazo fatal para contestar la demanda (Art. 258 CPC). Si no contesta, el proceso sigue en rebeldía. Evalúe primero si procede oponer excepciones dilatorias (6 días, dentro del mismo emplazamiento).",
-      demandante: "Plazo de la contraparte. Si no contestan, solicite que se tenga por evacuado el trámite en rebeldía. Monitoree OJV diariamente."
-    },
-    "18": {
-      demandado: "Plazo ampliado por domicilio fuera de la comuna pero en el mismo territorio jurisdiccional (Art. 258 inc. 2° CPC). Verifique si aplica además tabla de emplazamiento.",
-      demandante: "La contraparte tiene 18 días. Mantenga monitoreo en OJV. Si el domicilio es en otra ciudad o región, podría aplicar adicionalmente la tabla de emplazamiento."
-    },
-    "tabla": {
-      demandado: "Plazo extendido por distancia según Tabla de Emplazamiento (Art. 259 CPC). Base: 18 días + días adicionales de la tabla vigente de la Corte Suprema.",
-      demandante: "Verifique la tabla vigente para confirmar los días adicionales. Si hay pluralidad de demandados con distintos domicilios, el plazo vence cuando expira el último (Art. 260 CPC)."
-    },
-    // DISCUSIÓN
-    "6_rep": {
-      demandante: "Plazo fatal para presentar la Réplica (Art. 311 CPC). Amplíe los argumentos de la demanda y rebata la contestación.",
-      demandado: "Plazo de la contraparte para Réplica. Prepare la Dúplica anticipadamente."
-    },
-    "6_dup": {
-      demandado: "Plazo fatal para presentar la Dúplica (Art. 311 CPC). Último escrito de discusión antes de la prueba. Sea exhaustivo.",
-      demandante: "Plazo de la contraparte para Dúplica. Tras esto, el tribunal debería recibir la causa a prueba."
-    },
-    // PRUEBA
-    "5_test": {
-      both: "<strong>⚠ Plazo crítico:</strong> La lista de testigos y minuta de puntos deben presentarse dentro de los primeros 5 días del término probatorio (Art. 320 CPC). Sin lista, no hay prueba testimonial. Presente al día 4 como máximo."
-    },
-    "20": {
-      both: "Término probatorio ordinario de 20 días hábiles (Art. 328 CPC). Dies a quo: desde la última notificación por cédula del auto de prueba. Si hay reposición contra el auto de prueba, el plazo corre desde que se resuelva."
-    },
-    // CIERRE
-    "3_cit": {
-      both: "Reposición contra la resolución de Citación para Oír Sentencia (Art. 432 CPC). Tras este plazo, preclusión casi total: no se admiten escritos ni pruebas. Interponga solo si hay vicios de procedimiento."
-    },
-    "20_mmr": {
-      both: "El juez decretó Medidas para Mejor Resolver (Art. 159 CPC). Deben ejecutarse en 20 días hábiles. El plazo de la sentencia queda suspendido hasta su cumplimiento o vencimiento."
-    },
-    // MENOR CUANTÍA
-    "8": {
-      demandado: "Plazo breve para contestar en menor cuantía (Art. 698 CPC). Proceso sumario: los trámites son más concentrados.",
-      demandante: "Monitoree la contestación de la contraparte en OJV."
-    },
-    "8_prob": { both: "Término probatorio reducido en menor cuantía (Art. 702 CPC). Priorice la prueba más relevante." },
-    "2": { both: "Lista de testigos en menor cuantía. Plazo muy breve: preséntela el primer día del probatorio." },
-    // SUMARIO
-    "5_sum": {
-      demandado: "La audiencia de contestación, conciliación y prueba se celebra el 5° día hábil desde la notificación (Art. 683 CPC). Prepare su defensa completa para ese único acto.",
-      demandante: "La audiencia es el 5° día hábil. Tenga toda su prueba lista. El tribunal puede dictar sentencia en la misma audiencia o dentro de los 10 días siguientes."
-    },
-    // EJECUTIVO
-    "4": {
-      demandado: "Plazo muy breve: 4 días desde el requerimiento de pago para oponer excepciones (Art. 459 inc. 1° CPC). Actúe de inmediato — todas las excepciones deben oponerse en un mismo escrito (Art. 465 CPC). Sin oposición, el tribunal dicta sentencia de remate.",
-      demandante: "Si no se oponen excepciones en 4 días, solicite que se proceda al pago o al remate según corresponda."
-    },
-    "8": {
-      demandado: "8 días desde el requerimiento practicado fuera de la comuna asiento del tribunal (Art. 459 inc. 2° CPC, modificado por Ley 21.394). Todas las excepciones deben oponerse en un mismo escrito (Art. 465 CPC).",
-      demandante: "Monitoree si la contraparte opone excepciones dentro del plazo. Si no lo hace, solicite se proceda al remate."
-    },
-    "tabla_ej": {
-      demandado: "8 días base + tabla de emplazamiento, oponiendo ante el tribunal de la causa (Art. 460 CPC). ⚠ También puede oponer ante el tribunal exhortado con plazos de 4 u 8 días (Art. 461 CPC) — elija la opción que más le convenga.",
-      demandante: "Plazo ampliado por exhorto. Verifique la tabla de emplazamiento vigente para confirmar la fecha exacta."
-    },
-    "4_exhortado": {
-      demandado: "Opone excepciones ante el tribunal exhortado en 4 días (Art. 461 CPC). Esta es una alternativa a oponer ante el tribunal de la causa. Todas las excepciones en un mismo escrito (Art. 465 CPC).",
-      demandante: "El ejecutado optó por oponer ante el tribunal exhortado. Monitoree ese tribunal."
-    },
-    "8_exhortado": {
-      demandado: "Opone excepciones ante el tribunal exhortado en 8 días (Art. 461 CPC). Esta es una alternativa a oponer ante el tribunal de la causa. Todas las excepciones en un mismo escrito (Art. 465 CPC).",
-      demandante: "El ejecutado optó por oponer ante el tribunal exhortado con 8 días. Monitoree ese tribunal."
-    },
-    "4_traslado_ej": {
-      demandante: "Traslado de las excepciones: tiene 4 días para evacuar el traslado y responder a las excepciones opuestas (Art. 466 CPC). Si no evacúa, el tribunal igualmente resolverá.",
-      demandado: "El tribunal dio traslado de las excepciones al ejecutante. Si no responde en 4 días, el juez procederá igual."
-    },
-    "10_ej": {
-      both: "Término probatorio ejecutivo de 10 días hábiles (Art. 468 CPC). <strong>Dies a quo:</strong> última notificación por cédula del auto de prueba — o si hubo reposición, desde la notificación por Estado Diario de la resolución que falla la última reposición. Puede ampliarse hasta 10 días más a petición del acreedor, solicitada antes de vencer el plazo original. No existe término extraordinario para rendir prueba fuera del territorio (solo por acuerdo de partes). Lista de testigos: dentro de los primeros 5 días."
-    },
-    "5_ej_test": {
-      both: "Lista de testigos en juicio ejecutivo. Preséntela dentro de los primeros 5 días del probatorio o perderá la prueba testimonial."
-    },
-    // ARRIENDO
-    "5_arr": {
-      both: "<strong>⚠ Audiencia única (Art. 8 N°2 Ley 18.101):</strong> contestación + conciliación + prueba en el 5° día hábil. Lista de testigos: antes de las <span style='color:var(--red);font-weight:600;'>12:00 del día anterior</span>. Si hay reconvención, la notificación debió hacerse con al menos 15 días de anticipación."
-    },
-    // RECURSOS
-    "3_rep_esp": {
-      both: "Reposición especial de 3 días contra sentencias interlocutorias en casos específicos (Art. 181 CPC). Si corresponde, incluya apelación subsidiaria en el mismo escrito."
-    },
-    "5_rec": {
-      both: "Reposición ordinaria de 5 días contra autos y decretos (Art. 181 CPC). Si la resolución es una sentencia interlocutoria, interponga además apelación subsidiaria obligatoriamente."
-    },
-    "5_ape_int": {
-      both: "Apelación de 5 días contra sentencias interlocutorias y autos (Art. 189 CPC). Puede interponerse subsidiariamente a una reposición, en el mismo escrito y plazo."
-    },
-    "10_rec": {
-      both: "Apelación de sentencia definitiva de 1ª instancia (Art. 189 CPC). Redacte con todos los fundamentos de hecho y derecho. La Corte de Apelaciones resolverá."
-    },
-    "15_rec": {
-      both: "Casación en la forma o el fondo (Art. 770 CPC). Debe invocar la causal legal específica. Es un recurso de derecho estricto: evalúe con detención antes de interponerlo."
-    },
-    "5_queja": {
-      both: "Recurso de queja de 5 días (Auto Acordado CS). Procede contra resoluciones con falta o abuso grave que no sean apelables. Se interpone ante el superior jerárquico."
-    },
-    "5_hecho": {
-      both: "Recurso de hecho de 5 días (Art. 203 CPC). Procede cuando el tribunal deniega indebidamente una apelación. Se interpone directamente ante el tribunal superior."
-    },
-    "30_prot": {
-      both: "Recurso de protección de 30 días corridos (Auto Acordado CS). Plazo en días corridos — no hábiles. Corre desde el acto u omisión, o desde que la parte tuvo conocimiento. Se interpone ante la Corte de Apelaciones competente."
-    },
-    // OTROS
-    "3": {
-      both: "Traslado de incidentes de 3 días (Art. 89 CPC). El tribunal resolverá de plano o, si requiere prueba, abrirá un término incidental de 8 días."
-    },
-    "6_dil": {
-      demandado: "Excepciones dilatorias de 6 días (Art. 305 CPC). Se oponen dentro del término de emplazamiento, antes de contestar. Corrigen vicios de procedimiento sin entrar al fondo.",
-      demandante: "La contraparte tiene 6 días para oponer excepciones dilatorias. Si las interpone, prepare el escrito de contestación a ellas."
-    }
-  };
 
   // ─── FERIADOS CHILE ──────────────────────────────────────────────────────────
   // Fuente: Ley 2.977, Ley 19.973 y calendario oficial BCN
@@ -1433,10 +1306,7 @@
       deadline = new Date(baseDate);
       deadline.setDate(deadline.getDate() + days);
       document.getElementById('party-badge').innerHTML = '<span class="badge badge-both">Plazo común</span>';
-      const logic = strategyLogic[hitoVal] || {};
-      const strategy = logic[currentParty] || logic.both || 'Revise el plazo con atención.';
-      showCivilResult(null, deadline, strategy, false, true, hitoVal);
-      addToHistory(hitoSel.options[hitoSel.selectedIndex].text, deadline);
+      showCivilResult(null, deadline, true, hitoVal);
       return;
     }
 
@@ -1473,15 +1343,10 @@
     }
     document.getElementById('party-badge').innerHTML = badge;
 
-    const logic = strategyLogic[hitoVal] || {};
-    const strategy = logic[currentParty] || logic.both || 'Mantenga monitoreo activo en la Oficina Judicial Virtual.';
-    const isCritical = ['5_arr','5_test','5_ej_test'].includes(hitoVal);
-
-    showCivilResult(diaUno, deadline, strategy, isCritical, false, hitoVal);
-    addToHistory(hitoSel.options[hitoSel.selectedIndex].text, deadline);
+    showCivilResult(diaUno, deadline, false, hitoVal);
   }
 
-  function showCivilResult(diaUno, deadline, strategy, isCritical, isCorridos, hitoVal) {
+  function showCivilResult(diaUno, deadline, isCorridos, hitoVal) {
     const remaining = daysUntil(deadline);
 
     document.getElementById('day1-section').innerHTML = diaUno
@@ -1496,44 +1361,7 @@
       </div>`;
 
 
-    document.getElementById('strategy-section').innerHTML = `
-      <div class="strategy-box ${isCritical ? 'critical' : ''}">
-        <div class="strategy-label">Estrategia procesal</div>
-        <div class="strategy-text">${strategy}</div>
-      </div>`;
 
-    // Observaciones automáticas — si el trámite es un probatorio
-    const obsSection = document.getElementById('next-chain-section');
-    const obs = obsMap[hitoVal];
-    if (obs) {
-      const obsDeadline = calcObsDeadline(deadline, obs.dias);
-      const obsRemaining = daysUntil(obsDeadline);
-      const obsAbs = Math.abs(obsRemaining);
-      const obsUrgency = obsRemaining < 0 ? 'urgent' : obsRemaining <= 3 ? 'urgent' : obsRemaining <= 7 ? 'warn' : 'ok';
-      obsSection.innerHTML = `
-        <div style="margin-top:4px;">
-          <div style="font-size:10px;font-weight:600;color:var(--text-3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px;margin-top:6px;">A continuación — automático</div>
-          <div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:14px;display:flex;flex-direction:column;gap:8px;">
-            <div style="display:flex;align-items:center;justify-content:space-between;">
-              <div>
-                <div style="font-size:12px;font-weight:600;color:var(--text);">Observaciones a la Prueba — ${obs.dias}d</div>
-                <div style="font-size:10px;color:var(--text-3);margin-top:2px;">${obs.art}</div>
-              </div>
-              <div class="countdown-bar ${obsUrgency}" style="margin:0;padding:6px 10px;min-width:80px;text-align:center;">
-                <div style="font-family:'DM Mono',monospace;font-size:16px;font-weight:500;">${obsAbs}</div>
-                <div style="font-size:9px;">${obsRemaining < 0 ? 'vencido' : 'días'}</div>
-              </div>
-            </div>
-            <div style="border-top:1px solid var(--border);padding-top:8px;">
-              <div style="font-size:10px;font-weight:600;color:var(--blue-text);text-transform:uppercase;letter-spacing:.04em;margin-bottom:3px;">Vencimiento</div>
-              <div style="font-size:13px;font-weight:600;color:var(--text);">${capitalize(obsDeadline.toLocaleDateString('es-CL', { weekday:'long', day:'numeric', month:'long', year:'numeric' }))}</div>
-              <div style="font-size:11px;color:var(--text-3);margin-top:4px;">${obs.nota}</div>
-            </div>
-          </div>
-        </div>`;
-    } else {
-      obsSection.innerHTML = '';
-    }
 
     document.getElementById('result-empty').style.display = 'none';
     const rc = document.getElementById('result-content');
@@ -1544,50 +1372,330 @@
   }
 
 
-  // ─── OBSERVACIONES AUTOMÁTICAS ───────────────────────────────────────────────
-  // Cuando se calcula un término probatorio, se muestran automáticamente
-  // las observaciones a la prueba como bloque secundario en el resultado.
-  // obsMap: { diasObs, artObs, nota }
 
-  const obsMap = {
-    "20":     { dias: 10, art: "Art. 343 CPC",  nota: "Desde el día siguiente al vencimiento del probatorio ordinario." },
-    "10_ej":  { dias: 6,  art: "Art. 469 CPC",  nota: "Desde el día siguiente al vencimiento del probatorio ejecutivo. Vencido este plazo el tribunal cita a oír sentencia de oficio." },
-    "8_prob": { dias: 6,  art: "Art. 704 CPC",  nota: "Desde el día siguiente al vencimiento del probatorio de menor cuantía." },
-  };
+  // ─── UI LOGIC ────────────────────────────────────────────────────────────────
 
-  function calcObsDeadline(probDeadline, dias) {
-    // El día siguiente hábil al vencimiento del probatorio es el día 1 de observaciones
-    let diaUnoObs = nextBusinessDay(probDeadline);
-    return addBusinessDays(diaUnoObs, dias - 1);
+  function setParty(party) {
+    currentParty = party;
+    document.getElementById('btn-demandante').classList.toggle('active', party === 'demandante');
+    document.getElementById('btn-demandado').classList.toggle('active', party === 'demandado');
   }
 
-  // ─── HISTORY ─────────────────────────────────────────────────────────────────
 
-  function addToHistory(name, deadline) {
-    sessionHistory.unshift({ name: name.replace(/ — \d+d.*$/, '').replace(/ — .*$/, '').trim(), deadline });
-    if (sessionHistory.length > 5) sessionHistory.pop();
-    renderHistory();
+  function onProcChange() {
+    const cat = document.getElementById('proc-category').value;
+    const stageSel = document.getElementById('proc-stage');
+    const tramSel  = document.getElementById('proc-type');
+
+    // Reset stage
+    stageSel.innerHTML = '<option value="">Seleccione etapa…</option>';
+    stageSel.disabled = true;
+    // Reset trámite
+    tramSel.innerHTML = '<option value="">Primero elija etapa…</option>';
+    tramSel.disabled = true;
+
+    if (cat && etapas[cat]) {
+      etapas[cat].forEach(e => {
+        const o = document.createElement('option');
+        o.value = e.val; o.textContent = e.text;
+        if (e.hint) o.dataset.hint = e.hint;
+        stageSel.appendChild(o);
+      });
+      stageSel.disabled = false;
+    }
+
+    // Reset helpers and controls
+    document.getElementById('stage-helper').style.display = 'none';
+    document.getElementById('tramite-helper').style.display = 'none';
+    document.getElementById('desde-box').style.display = 'none';
+    document.getElementById('dilatorias-div').style.display = 'none';
+    document.getElementById('hubo-dilatorias').checked = false;
+    document.getElementById('dilatorias-warn').style.display = 'none';
+    document.getElementById('previa-warn').style.display = 'none';
+    document.getElementById('notif-type').value = '0';
+    document.getElementById('tabla-div').style.display = 'none';
+    document.getElementById('date-label').innerText = 'Fecha de Notificación';
+    document.getElementById('notif-options').style.display = '';
+    document.getElementById('prorroga-div').style.display = '';
+    document.getElementById('suspension-ui').style.display = '';
+    clearResult();
   }
 
-  function renderHistory() {
-    const container = document.getElementById('history-container');
-    const list = document.getElementById('history-list');
-    container.style.display = sessionHistory.length ? 'block' : 'none';
-    list.innerHTML = '';
-    sessionHistory.forEach(entry => {
-      const div = document.createElement('div');
-      div.className = 'history-item';
-      const remaining = daysUntil(entry.deadline);
-      const color = remaining < 0 ? 'var(--red)' : remaining <= 3 ? 'var(--red)' : remaining <= 7 ? 'var(--amber)' : 'var(--green)';
-      div.innerHTML = `
-        <div>
-          <div class="history-item-name">${entry.name}</div>
-          <div class="history-item-left">${remaining < 0 ? 'Vencido' : remaining === 0 ? 'Hoy' : remaining + 'd restantes'}</div>
-        </div>
-        <div class="history-item-date" style="color:${color}">${formatShort(entry.deadline)}</div>`;
-      list.appendChild(div);
-    });
+  function onStageChange() {
+    const cat      = document.getElementById('proc-category').value;
+    const stageVal = document.getElementById('proc-stage').value;
+    const stageSel = document.getElementById('proc-stage');
+    const tramSel  = document.getElementById('proc-type');
+
+    // Stage hint ocultado para interfaz más limpia
+    document.getElementById('stage-helper').style.display = 'none';
+
+    // Populate trámites
+    tramSel.innerHTML = '<option value="">Seleccione trámite…</option>';
+    tramSel.disabled = true;
+
+    const etapaData = etapas[cat]?.find(e => e.val === stageVal);
+    if (etapaData) {
+      etapaData.tramites.forEach(h => {
+        const o = document.createElement('option');
+        o.value = h.val; o.textContent = h.text;
+        o.dataset.for = h.for;
+        if (h.hint)    o.dataset.hint    = h.hint;
+        if (h.desde)   o.dataset.desde   = h.desde;
+        if (h.corridos) o.dataset.corridos = 'true';
+        tramSel.appendChild(o);
+      });
+      tramSel.disabled = false;
+    }
+
+    // Reset trámite-level controls
+    document.getElementById('tramite-helper').style.display = 'none';
+    document.getElementById('desde-box').style.display = 'none';
+    document.getElementById('dilatorias-div').style.display = 'none';
+    document.getElementById('hubo-dilatorias').checked = false;
+    document.getElementById('dilatorias-warn').style.display = 'none';
+    document.getElementById('previa-warn').style.display = 'none';
+    document.getElementById('tabla-div').style.display = 'none';
+    document.getElementById('date-label').innerText = 'Fecha de Notificación';
+    document.getElementById('notif-options').style.display = '';
+    document.getElementById('prorroga-div').style.display = '';
+    document.getElementById('suspension-ui').style.display = '';
+    clearResult();
   }
+
+  function handleHitoChange() {
+    const sel = document.getElementById('proc-type');
+    const val = sel.value;
+    const opt = sel.options[sel.selectedIndex];
+
+    // Tabla de emplazamiento
+    const isTabla = val === 'tabla' || val === 'tabla_ej';
+    document.getElementById('tabla-div').style.display = isTabla ? 'block' : 'none';
+
+    // Base legal hint ocultado para interfaz más limpia
+    document.getElementById('tramite-helper').style.display = 'none';
+
+    // Desde cuándo se cuenta — render HTML, style ⚠ warnings
+    const desdeBox  = document.getElementById('desde-box');
+    const desdeText = document.getElementById('desde-text');
+    const desde = opt?.dataset.desde;
+    if (desde) {
+      // Split on ⚠ to style warnings in amber
+      const styled = desde.replace(/(⚠[^<]*?)(<br>|$)/g,
+        '<span style="color:var(--amber-text);font-weight:500;">$1</span>$2');
+      desdeText.innerHTML = styled;
+      desdeBox.style.display = 'block';
+      // Colapsar el detalle al cambiar trámite
+      const dc = document.getElementById('desde-content');
+      const di = document.getElementById('desde-toggle-icon');
+      if (dc) { dc.style.display = 'none'; }
+      if (di) { di.textContent = '▸'; }
+    } else { desdeBox.style.display = 'none'; }
+
+    // Corridos: hide hábil-specific controls
+    const isCorridos = opt?.dataset.corridos === 'true';
+    document.getElementById('notif-options').style.display  = isCorridos ? 'none' : '';
+    document.getElementById('prorroga-div').style.display   = isCorridos ? 'none' : '';
+    document.getElementById('suspension-ui').style.display  = isCorridos ? 'none' : '';
+    document.getElementById('date-label').innerText = isCorridos
+      ? 'Fecha del acto / conocimiento del agravio'
+      : 'Fecha de Notificación';
+
+    // Advertencia proactiva de resoluciones pendientes
+    // Se muestra para trámites cuyo dies a quo depende de que no haya resoluciones pendientes
+    const previaWarnMap = {
+      // ORDINARIO — probatorio
+      "20": "El término probatorio solo comienza a correr una vez notificado el auto de prueba a todas las partes. Antes de ingresar la fecha, verifique que: (1) no haya recursos de reposición pendientes contra el auto de prueba — si los hay, el plazo no corre hasta que se fallen; (2) la notificación por cédula se haya practicado a todas las partes.",
+      // ORDINARIO — réplica y dúplica
+      "6_rep": "El plazo de réplica solo corre una vez que el tribunal tiene por contestada la demanda (o por evacuado el trámite en rebeldía). Verifique que no haya excepciones dilatorias pendientes de fallo que suspendan el curso del proceso.",
+      "6_dup": "El plazo de dúplica corre desde que el tribunal tiene por evacuada la réplica. Verifique que no haya incidentes pendientes que hayan suspendido el curso de los autos.",
+      // EJECUTIVO — probatorio
+      "10_ej": "El término probatorio ejecutivo solo se abre si el tribunal declara <strong>admisibles</strong> las excepciones y las recibe a prueba. Antes de calcular, verifique que: (1) el tribunal ya resolvió el traslado al ejecutante (4 días, Art. 466 CPC); (2) el tribunal dictó resolución declarando admisibles las excepciones; (3) se ha notificado el auto de prueba. Si cualquiera de estos trámites está pendiente, el plazo aún no ha comenzado.",
+      // EJECUTIVO — excepciones
+      "4":        "Antes de calcular, verifique en el expediente que el requerimiento de pago efectivamente se practicó y consta en el cuaderno de apremio. El plazo corre desde el acto del requerimiento, no desde la notificación de la demanda.",
+      "8":        "Antes de calcular, verifique en el expediente que el requerimiento de pago efectivamente se practicó fuera de la comuna y consta en el cuaderno de apremio.",
+      "tabla_ej": "Antes de calcular, verifique que el exhorto fue recibido y el requerimiento practicado. Confirme también los días exactos de la tabla de emplazamiento vigente de la Corte Suprema según la ciudad.",
+      // MENOR CUANTÍA — probatorio
+      "8_prob": "Verifique que no haya recursos de reposición pendientes contra el auto de prueba. Si los hay, el plazo no corre hasta que se fallen.",
+      // PRUEBA — lista testigos (sub-plazo interno)
+      "5_test":    "Este plazo es un sub-plazo interno del probatorio — corre desde el mismo Día 1 del término probatorio. Ingrese la misma fecha de inicio del probatorio, no una nueva fecha de notificación.",
+      "5_ej_test": "Este plazo es un sub-plazo interno del probatorio ejecutivo — corre desde el Día 1 del término probatorio ejecutivo. Ingrese la misma fecha de inicio del probatorio.",
+      "2":         "Este plazo es un sub-plazo interno del probatorio de menor cuantía — corre desde el Día 1 del término probatorio. Ingrese la misma fecha de inicio del probatorio.",
+    };
+
+    const previaWarn = document.getElementById('previa-warn');
+    const previaText = document.getElementById('previa-warn-text');
+    if (val && previaWarnMap[val]) {
+      previaText.innerHTML = previaWarnMap[val];
+      previaWarn.style.display = 'block';
+    } else {
+      previaWarn.style.display = 'none';
+    }
+
+    // Advertencia de dilatorias — solo en trámites de contestar demanda
+    const esEmplazamiento = ['15','18','tabla','8','4','tabla_ej','4_exhortado','8_exhortado'].includes(val);
+    const dilatoriasDiv = document.getElementById('dilatorias-div');
+    dilatoriasDiv.style.display = esEmplazamiento ? 'block' : 'none';
+    if (!esEmplazamiento) {
+      document.getElementById('hubo-dilatorias').checked = false;
+      document.getElementById('dilatorias-warn').style.display = 'none';
+    }
+  }
+
+  function getHitoData(val) {
+    for (const cats of Object.values(etapas)) {
+      for (const etapa of cats) {
+        const found = etapa.tramites.find(h => h.val === val);
+        if (found) return found;
+      }
+    }
+    return null;
+  }
+
+
+  function onNotifChange() {
+    // reservado para futura lógica
+  }
+
+  function onDilatoriasChange() {
+    const checked = document.getElementById('hubo-dilatorias').checked;
+    document.getElementById('dilatorias-warn').style.display = checked ? 'block' : 'none';
+    document.getElementById('contexto-hint').style.display = 'none';
+    document.getElementById('contexto-procesal').value = '';
+  }
+
+  function onContextoChange() {
+    const val = document.getElementById('contexto-procesal').value;
+    const hint = document.getElementById('contexto-hint');
+    const hints = {
+      rechazada: 'Use como fecha de referencia la notificación de la resolución que rechazó la dilatoria (por Estado Diario, Art. 308 CPC).',
+      subsanada: 'Use como fecha de referencia la notificación de la resolución que tuvo por subsanada/rectificada la demanda (por cédula o por Estado Diario según lo haya ordenado el tribunal, Art. 308 CPC). Este es el caso del Art. 44 que aplicó en su causa.',
+      acogida_termino: 'La excepción dilatoria puso término al juicio (ej. incompetencia absoluta). No hay plazo para contestar — evalúe otras acciones.'
+    };
+    if (val && hints[val]) { hint.textContent = hints[val]; hint.style.display = 'block'; }
+    else { hint.style.display = 'none'; }
+  }
+
+
+  function toggleDesde() {
+    const content = document.getElementById('desde-content');
+    const icon = document.getElementById('desde-toggle-icon');
+    const isOpen = content.style.display !== 'none';
+    content.style.display = isOpen ? 'none' : 'block';
+    icon.textContent = isOpen ? '▸' : '▾';
+  }
+
+  function toggleSuspension() {
+    const ui = document.getElementById('suspension-ui');
+    const icon = document.getElementById('susp-toggle-icon');
+    const isOpen = ui.style.display !== 'none';
+    ui.style.display = isOpen ? 'none' : 'flex';
+    icon.textContent = isOpen ? '▸' : '▾';
+    if (isOpen) document.getElementById('suspension-days').value = 0;
+  }
+
+  function toggleAcc(id, btn) {
+    const body = document.getElementById(id);
+    body.classList.toggle('open');
+    const chevron = btn.querySelector('.accordion-chevron');
+    if (chevron) chevron.style.transform = body.classList.contains('open') ? 'rotate(180deg)' : '';
+  }
+
+  function clearResult() {
+    document.getElementById('result-empty').style.display = 'block';
+    document.getElementById('result-content').style.display = 'none';
+    document.getElementById('party-badge').innerHTML = '';
+  }
+
+  // ─── CALCULATE ───────────────────────────────────────────────────────────────
+
+  function calculateDeadline() {
+    const refVal = document.getElementById('ref-date').value;
+    if (!refVal) { alert('Por favor ingrese una fecha de referencia.'); return; }
+
+    let baseDate = new Date(refVal + 'T00:00:00');
+    const hitoSel = document.getElementById('proc-type');
+    const hitoVal = hitoSel.value;
+    if (!hitoVal) { alert('Por favor seleccione el trámite a realizar.'); return; }
+
+    const hitoFor = hitoSel.options[hitoSel.selectedIndex].dataset.for;
+    const hitoData = getHitoData(hitoVal);
+    const isCorridos = hitoData && hitoData.corridos;
+
+    let deadline, diaUno = null;
+
+    if (isCorridos) {
+      const days = parseInt(hitoVal.split('_')[0]);
+      deadline = new Date(baseDate);
+      deadline.setDate(deadline.getDate() + days);
+      document.getElementById('party-badge').innerHTML = '<span class="badge badge-both">Plazo común</span>';
+      showCivilResult(null, deadline, true, hitoVal);
+      return;
+    }
+
+    const notifType = document.getElementById('notif-type').value;
+    const notifVal = notifType;
+    if (notifVal === '3') baseDate = addBusinessDays(baseDate, 3);
+    diaUno = new Date(baseDate);
+    if (notifVal !== 'tácita') diaUno = nextBusinessDay(diaUno);
+
+    let tablaExtra = parseInt(document.getElementById('tabla-days').value || 0);
+    let days;
+    if (hitoVal === 'tabla') days = 18 + tablaExtra;
+    else if (hitoVal === 'tabla_ej') days = 8 + tablaExtra;
+    else days = parseInt(hitoVal.split('_')[0]);
+
+    const suspension = parseInt(document.getElementById('suspension-days').value) || 0;
+    deadline = addBusinessDays(diaUno, (days + suspension) - 1);
+
+    if (document.getElementById('last-day-holiday').checked) {
+      while (!isBusinessDay(deadline)) deadline.setDate(deadline.getDate() + 1);
+    }
+
+    let badge = '';
+    if (hitoFor === 'both') {
+      badge = '<span class="badge badge-both">Plazo común</span>';
+    } else if (hitoFor === 'demandante') {
+      if (currentParty === 'demandante') badge = '<span class="badge badge-own">Su plazo fatal</span>';
+      else if (currentParty === 'demandado') badge = '<span class="badge badge-opp">Plazo demandante</span>';
+      else badge = '<span class="badge badge-both">Plazo demandante</span>';
+    } else if (hitoFor === 'demandado') {
+      if (currentParty === 'demandado') badge = '<span class="badge badge-own">Su plazo fatal</span>';
+      else if (currentParty === 'demandante') badge = '<span class="badge badge-opp">Plazo demandado</span>';
+      else badge = '<span class="badge badge-both">Plazo demandado</span>';
+    }
+    document.getElementById('party-badge').innerHTML = badge;
+
+    showCivilResult(diaUno, deadline, false, hitoVal);
+  }
+
+  function showCivilResult(diaUno, deadline, isCorridos, hitoVal) {
+    const remaining = daysUntil(deadline);
+
+    document.getElementById('day1-section').innerHTML = diaUno
+      ? `<div class="day1-label">Día 1 del plazo</div><div class="day1-date">${capitalize(formatFull(diaUno))}</div>`
+      : `<div class="day1-label" style="color:var(--amber-text);">Días corridos — sin exclusión de feriados ni fines de semana</div>`;
+
+    document.getElementById('deadline-section').innerHTML = `
+      <div class="deadline-block">
+        <div class="deadline-label">Vencimiento fatal</div>
+        <div class="deadline-date">${capitalize(deadline.toLocaleDateString('es-CL', { day: 'numeric', month: 'long', year: 'numeric' }))}</div>
+        <div class="deadline-weekday">${capitalize(deadline.toLocaleDateString('es-CL', { weekday: 'long' }))}</div>
+      </div>`;
+
+
+
+
+    document.getElementById('result-empty').style.display = 'none';
+    const rc = document.getElementById('result-content');
+    rc.style.display = 'block';
+    rc.classList.remove('animate-in');
+    void rc.offsetWidth;
+    rc.classList.add('animate-in');
+  }
+
+
+
 
   // ─── TABS PRINCIPALES ───────────────────────────────────────────────────────
   function switchTab(tab) {
