@@ -255,7 +255,7 @@
   .accordion-trigger-left { display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 600; color: var(--text); text-transform: uppercase; letter-spacing: 0.04em; }
   .accordion-chevron { width: 14px; height: 14px; color: var(--text-3); transition: transform 0.2s; flex-shrink: 0; }
   .accordion-body { max-height: 0; overflow: hidden; transition: max-height 0.3s ease; }
-  .accordion-body.open { max-height: 900px; }
+  .accordion-body.open { max-height: 3000px; }
   .accordion-body.open .accordion-chevron { transform: rotate(180deg); }
   .accordion-inner { padding: 16px; border-top: 1px solid var(--border); font-size: 12px; color: var(--text-2); line-height: 1.7; }
 
@@ -389,9 +389,12 @@
 </header>
 
 <div class="tabs">
-  <button class="tab-btn active" id="tab-civil">Procedimientos Civiles</button>
+  <button class="tab-btn active" id="tab-civil" onclick="switchTab('calculadora')">Calculadora</button>
+  <button class="tab-btn" id="tab-ref" onclick="switchTab('referencia')">Referencia</button>
 </div>
 
+<!-- TAB CALCULADORA -->
+<div id="tab-calculadora">
 <div class="main">
   <!-- LEFT PANEL -->
   <div style="display:flex;flex-direction:column;gap:16px;">
@@ -430,7 +433,6 @@
                   <option value="sumario">Juicio Sumario</option>
                   <option value="ejecutivo">Juicio Ejecutivo (Cobranza)</option>
                   <option value="arriendo">Juicio de Arrendamiento (Ley 18.101)</option>
-                  <option value="recursos">Recursos Judiciales</option>
                   <option value="otros">Incidentes / Traslados</option>
                 </select>
               </div>
@@ -457,9 +459,14 @@
                   <option value="">Primero elija etapa…</option>
                 </select>
                 <div id="tramite-helper" class="hint" style="display:none;"></div>
-                <div id="desde-box" style="display:none;margin-top:6px;background:var(--blue-light);border:1px solid var(--border-strong);border-radius:8px;padding:9px 12px;">
-                  <div style="font-size:10px;font-weight:600;color:var(--blue-text);text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px;">📅 Desde cuándo se cuenta</div>
-                  <div id="desde-text" style="font-size:12px;color:var(--text);line-height:1.5;"></div>
+                <div id="desde-box" style="display:none;margin-top:4px;">
+                  <button onclick="toggleDesde()" style="background:none;border:none;cursor:pointer;padding:0;display:flex;align-items:center;gap:5px;font-family:'DM Sans',sans-serif;">
+                    <span id="desde-toggle-icon" style="font-size:11px;color:var(--blue-text);">▸</span>
+                    <span style="font-size:11px;color:var(--blue-text);font-weight:500;">¿Desde cuándo se cuenta?</span>
+                  </button>
+                  <div id="desde-content" style="display:none;margin-top:6px;background:var(--blue-light);border:1px solid var(--border-strong);border-radius:8px;padding:9px 12px;">
+                    <div id="desde-text" style="font-size:12px;color:var(--text);line-height:1.5;"></div>
+                  </div>
                 </div>
               </div>
 
@@ -525,17 +532,11 @@
             <div id="notif-options" class="field">
               <label>Forma de Notificación</label>
               <select id="notif-type" onchange="onNotifChange()">
-                <option value="0">Personal / Cédula (Art. 40 o Art. 48)</option>
-                <option value="44">Art. 44 — Cédula en domicilio (no encontrado)</option>
+                <option value="0">Personal / Cédula</option>
                 <option value="3">Carta Certificada (+3 días hábiles)</option>
-                <option value="tácita">Notificación Tácita (Día 1 es hoy)</option>
+                <option value="tácita">Estado Diario (Día 1 es hoy)</option>
               </select>
-              <div id="notif-44-warn" style="display:none;margin-top:6px;background:var(--amber-light);border:1px solid var(--border-strong);border-radius:8px;padding:9px 12px;">
-                <div style="font-size:10px;font-weight:600;color:var(--amber-text);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px;">⚠ Verificar antes de calcular</div>
-                <div style="font-size:11px;color:var(--text);line-height:1.6;">
-                  Para que esta notificación sea válida debe constar en el acta: (1) certificación de que ese es el domicilio del notificado y que se encuentra en el lugar del juicio, (2) nombre o identificación de la persona adulta con quien se dejaron las copias, (3) envío de carta certificada. Si alguno falta, la notificación es impugnable por nulidad procesal.
-                </div>
-              </div>
+
             </div>
 
 
@@ -547,127 +548,25 @@
         </div>
       </div>
       <div class="form-footer">
-        <div id="suspension-ui" class="suspension-group">
-          <label>Suspensión:</label>
-          <input type="number" id="suspension-days" value="0" min="0">
-          <span class="sublabel">días hábiles de entorpecimiento</span>
+        <div style="display:flex;flex-direction:column;gap:6px;">
+          <button onclick="toggleSuspension()" style="background:none;border:none;cursor:pointer;padding:0;display:flex;align-items:center;gap:5px;font-family:'DM Sans',sans-serif;">
+            <span id="susp-toggle-icon" style="font-size:11px;color:var(--text-3);">▸</span>
+            <span style="font-size:11px;color:var(--text-3);font-weight:500;">Agregar días de suspensión</span>
+          </button>
+          <div id="suspension-ui" class="suspension-group" style="display:none;">
+            <input type="number" id="suspension-days" value="0" min="0">
+            <span class="sublabel">días hábiles de entorpecimiento</span>
+          </div>
         </div>
         <button class="calc-btn" onclick="calculateDeadline()">Calcular Plazo Fatal →</button>
       </div>
     </div>
 
-    <!-- ACCORDIONS -->
-    <div style="display:flex;flex-direction:column;gap:10px;">
-
-      <div class="accordion" id="manual-abandono">
-        <button class="accordion-trigger" onclick="toggleAcc('body-1', this)">
-          <div class="accordion-trigger-left">
-            <span>⚖️</span> Manual: Gestión Útil y Abandono
-          </div>
-          <svg class="accordion-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
-        </button>
-        <div id="body-1" class="accordion-body">
-          <div class="accordion-inner">
-            <p>El abandono del procedimiento (Art. 152 CPC) opera cuando <strong>todas las partes</strong> han cesado en la prosecución del juicio durante <strong>6 meses</strong>, contados desde la última resolución recaída en una gestión útil.</p>
-            <br>
-            <p>Solo se interrumpe con gestiones que den <strong>curso progresivo</strong> a los autos (solicitar diligencias, acompañar documentos, etc.). Meras consultas al tribunal no bastan.</p>
-          </div>
-        </div>
-      </div>
-
-      <div class="accordion" id="manual-recursos">
-        <button class="accordion-trigger" onclick="toggleAcc('body-2', this)">
-          <div class="accordion-trigger-left">
-            <span>📚</span> Vademécum: Recursos y Plazos
-          </div>
-          <svg class="accordion-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
-        </button>
-        <div id="body-2" class="accordion-body">
-          <div class="accordion-inner">
-            <p style="font-size:10px;color:var(--text-3);margin-bottom:10px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;">Civil — Días hábiles (lunes a sábado)</p>
-            <table class="ref-table">
-              <thead><tr><th>Resolución / Situación</th><th>Recurso</th><th>Plazo</th><th>Base Legal</th></tr></thead>
-              <tbody>
-                <tr><td>Autos y Decretos</td><td>Reposición ordinaria</td><td><span class="days-badge">5 días</span></td><td>Art. 181 CPC</td></tr>
-                <tr><td>Sent. Interlocutorias (casos específicos)</td><td>Reposición especial</td><td><span class="days-badge">3 días</span></td><td>Art. 181 CPC</td></tr>
-                <tr><td>Interlocutorias / Autos</td><td>Apelación (o subsidiaria)</td><td><span class="days-badge">5 días</span></td><td>Art. 189 CPC</td></tr>
-                <tr class="bold-row"><td>Sentencia Definitiva 1ª instancia</td><td>Apelación</td><td><span class="days-badge">10 días</span></td><td>Art. 189 CPC</td></tr>
-                <tr class="bold-row"><td>Sentencia Definitiva / término</td><td>Casación forma o fondo</td><td><span class="days-badge">15 días</span></td><td>Art. 770 CPC</td></tr>
-                <tr><td>Resolución no apelable (falta/abuso)</td><td>Recurso de Queja</td><td><span class="days-badge">5 días</span></td><td>Auto Acordado CS</td></tr>
-                <tr><td>Resolución que deniega apelación</td><td>Recurso de Hecho</td><td><span class="days-badge">5 días</span></td><td>Art. 203 CPC</td></tr>
-                <tr><td>Citación para oír sentencia</td><td>Reposición</td><td><span class="days-badge">3 días</span></td><td>Art. 432 CPC</td></tr>
-                <tr><td>Incidentes</td><td>Traslado</td><td><span class="days-badge">3 días</span></td><td>Art. 89 CPC</td></tr>
-              </tbody>
-            </table>
-            <p style="font-size:10px;color:var(--text-3);margin:14px 0 10px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;">Constitucionales — Días corridos</p>
-            <table class="ref-table">
-              <thead><tr><th>Acción</th><th>Plazo</th><th>Nota</th></tr></thead>
-              <tbody>
-                <tr class="bold-row"><td>Recurso de Protección</td><td><span class="days-badge">30 días corridos</span></td><td>Desde el acto u omisión / conocimiento</td></tr>
-                <tr><td>Recurso de Amparo</td><td><span class="days-badge">Sin plazo</span></td><td>Mientras subsista la amenaza</td></tr>
-                <tr><td>Apelación de Protección/Amparo</td><td><span class="days-badge">5 días corridos</span></td><td>Ante la Corte Suprema</td></tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-
-      <div class="accordion" id="manual-cierre">
-        <button class="accordion-trigger" onclick="toggleAcc('body-3', this)">
-          <div class="accordion-trigger-left">
-            <span>🏁</span> Cierre de Causa y Sentencia
-          </div>
-          <svg class="accordion-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
-        </button>
-        <div id="body-3" class="accordion-body">
-          <div class="accordion-inner">
-            <table class="ref-table">
-              <thead><tr><th>Hito</th><th>Plazo</th><th>Base Legal</th><th>Nota</th></tr></thead>
-              <tbody>
-                <tr><td>Observaciones a la Prueba</td><td><span class="days-badge">10 días</span></td><td>Art. 343 CPC</td><td>Desde vencimiento del probatorio</td></tr>
-                <tr><td>Reposición contra Citación a Oír Sent.</td><td><span class="days-badge">3 días</span></td><td>Art. 432 CPC</td><td>Tras esta resolución, preclusión total</td></tr>
-                <tr><td>Medidas para Mejor Resolver</td><td><span class="days-badge">20 días</span></td><td>Art. 159 CPC</td><td>Suspenden el plazo de sentencia</td></tr>
-                <tr class="bold-row"><td>Sentencia — Juicio Ordinario</td><td><span class="days-badge">60 días</span></td><td>Art. 162 CPC</td><td>Plazo del tribunal</td></tr>
-                <tr><td>Sentencia — Juicio Sumario</td><td><span class="days-badge">10 días</span></td><td>Art. 688 CPC</td><td>Plazo del tribunal</td></tr>
-                <tr><td>Sentencia — Juicio Ejecutivo</td><td><span class="days-badge">10 días</span></td><td>Art. 474 CPC</td><td>Plazo del tribunal</td></tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-
-      <div class="accordion" id="manual-alertas">
-        <button class="accordion-trigger" onclick="toggleAcc('body-4', this)">
-          <div class="accordion-trigger-left">
-            <span>⚡</span> Alertas Logísticas — Red Flags
-          </div>
-          <svg class="accordion-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
-        </button>
-        <div id="body-4" class="accordion-body">
-          <div class="accordion-inner" style="display:flex;flex-direction:column;gap:10px;">
-            <div style="background:var(--red-light);border:1px solid var(--border-strong);border-radius:8px;padding:10px 12px;">
-              <div style="font-size:10px;font-weight:600;color:var(--red-text);text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px;">Apelación Subsidiaria Obligatoria</div>
-              <p style="font-size:12px;">Si interpone Reposición contra una sentencia interlocutoria, <strong>debe incluir apelación en subsidio</strong> en el mismo escrito y dentro del mismo plazo. Si no lo hace, pierde el recurso de apelación.</p>
-            </div>
-            <div style="background:var(--blue-light);border:1px solid var(--border-strong);border-radius:8px;padding:10px 12px;">
-              <div style="font-size:10px;font-weight:600;color:var(--blue-text);text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px;">Falla Técnica OJV — Ley 20.886</div>
-              <p style="font-size:12px;">Si el portal del Poder Judicial (PJUD/OJV) presenta caída el último día del plazo, la ley permite presentar el escrito el día hábil siguiente. Guarde pantallazos del error como respaldo.</p>
-            </div>
-            <div style="background:var(--amber-light);border:1px solid var(--border-strong);border-radius:8px;padding:10px 12px;">
-              <div style="font-size:10px;font-weight:600;color:var(--amber-text);text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px;">Pluralidad de Demandados — Art. 260 CPC</div>
-              <p style="font-size:12px;">Si hay varios demandados con distintos domicilios, el emplazamiento vence cuando expira el <strong>último plazo</strong>. Use el plazo más largo para calcular el vencimiento común.</p>
-            </div>
-            <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 12px;">
-              <div style="font-size:10px;font-weight:600;color:var(--text-2);text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px;">Doble Notificación</div>
-              <p style="font-size:12px;">Si una sentencia se notifica por Estado Diario y luego por Cédula, el plazo corre siempre desde la <strong>primera notificación válida</strong>. No confíe en la fecha de la notificación posterior.</p>
-            </div>
-          </div>
-        </div>
-      </div>
 
 
+      
 
-    </div>
+
   </div>
 
   <!-- RIGHT PANEL -->
@@ -714,8 +613,135 @@
       <div id="history-list"></div>
     </div>
 
+    <!-- ALERTAS LOGÍSTICAS -->
+<div class="accordion" id="manual-alertas">
+        <button class="accordion-trigger" onclick="toggleAcc('body-4', this)">
+          <div class="accordion-trigger-left">
+            <span>⚡</span> Alertas Logísticas — Red Flags
+          </div>
+          <svg class="accordion-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+        </button>
+        <div id="body-4" class="accordion-body">
+          <div class="accordion-inner" style="display:flex;flex-direction:column;gap:10px;">
+            <div style="background:var(--red-light);border:1px solid var(--border-strong);border-radius:8px;padding:10px 12px;">
+              <div style="font-size:10px;font-weight:600;color:var(--red-text);text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px;">Apelación Subsidiaria Obligatoria</div>
+              <p style="font-size:12px;">Si interpone Reposición contra una sentencia interlocutoria, <strong>debe incluir apelación en subsidio</strong> en el mismo escrito y dentro del mismo plazo. Si no lo hace, pierde el recurso de apelación.</p>
+            </div>
+            <div style="background:var(--blue-light);border:1px solid var(--border-strong);border-radius:8px;padding:10px 12px;">
+              <div style="font-size:10px;font-weight:600;color:var(--blue-text);text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px;">Falla Técnica OJV — Ley 20.886</div>
+              <p style="font-size:12px;">Si el portal del Poder Judicial (PJUD/OJV) presenta caída el último día del plazo, la ley permite presentar el escrito el día hábil siguiente. Guarde pantallazos del error como respaldo.</p>
+            </div>
+            <div style="background:var(--amber-light);border:1px solid var(--border-strong);border-radius:8px;padding:10px 12px;">
+              <div style="font-size:10px;font-weight:600;color:var(--amber-text);text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px;">Pluralidad de Demandados — Art. 260 CPC</div>
+              <p style="font-size:12px;">Si hay varios demandados con distintos domicilios, el emplazamiento vence cuando expira el <strong>último plazo</strong>. Use el plazo más largo para calcular el vencimiento común.</p>
+            </div>
+            <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 12px;">
+              <div style="font-size:10px;font-weight:600;color:var(--text-2);text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px;">Doble Notificación</div>
+              <p style="font-size:12px;">Si una sentencia se notifica por Estado Diario y luego por Cédula, el plazo corre siempre desde la <strong>primera notificación válida</strong>. No confíe en la fecha de la notificación posterior.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+
   </div>
 </div>
+</div>
+
+</div>
+
+<!-- TAB REFERENCIA -->
+<div id="tab-referencia" style="display:none;">
+  <div style="max-width:1100px;margin:0 auto;padding:28px 24px;display:flex;flex-direction:column;gap:20px;">
+
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);box-shadow:var(--shadow);overflow:hidden;">
+      <div style="padding:14px 20px;border-bottom:1px solid var(--border);background:var(--surface2);">
+        <span style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--text-2);">⚖️ &nbsp;Gestión Útil y Abandono del Procedimiento</span>
+      </div>
+      <div style="padding:20px;">
+        
+            <p>El abandono del procedimiento (Art. 152 CPC) opera cuando <strong>todas las partes</strong> han cesado en la prosecución del juicio durante <strong>6 meses</strong>, contados desde la última resolución recaída en una gestión útil.</p>
+            <br>
+            <p>Solo se interrumpe con gestiones que den <strong>curso progresivo</strong> a los autos (solicitar diligencias, acompañar documentos, etc.). Meras consultas al tribunal no bastan.</p>
+          
+      </div>
+    </div>
+
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);box-shadow:var(--shadow);overflow:hidden;">
+      <div style="padding:14px 20px;border-bottom:1px solid var(--border);background:var(--surface2);">
+        <span style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--text-2);">📚 &nbsp;Vademécum: Recursos y Plazos</span>
+      </div>
+      <div style="padding:20px;">
+        
+
+            <div style="background:var(--blue-light);border:1px solid var(--border-strong);border-radius:8px;padding:10px 14px;margin-bottom:14px;">
+              <div style="font-size:10px;font-weight:600;color:var(--blue-text);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px;">📌 Regla general</div>
+              <p style="font-size:12px;color:var(--text);line-height:1.6;">Los plazos para interponer recursos en materia civil son <strong>días hábiles</strong> (lunes a sábado, excluyendo feriados y domingos), salvo las acciones constitucionales que corren en <strong>días corridos</strong>. El plazo corre desde la <strong>notificación</strong> de la resolución impugnada, salvo regla especial.</p>
+            </div>
+
+            <p style="font-size:10px;color:var(--text-3);margin-bottom:8px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;">Recursos Civiles — Días hábiles (L–S)</p>
+            <table class="ref-table">
+              <thead><tr><th>Resolución impugnada</th><th>Recurso</th><th>Plazo</th><th>Base legal</th><th>Desde cuándo</th></tr></thead>
+              <tbody>
+                <tr><td>Autos y Decretos</td><td>Reposición ordinaria</td><td><span class="days-badge">5 días</span></td><td>Art. 181 CPC</td><td>Notif. por Estado Diario</td></tr>
+                <tr><td>Interlocutorias (ej. auto de prueba, citación a oír sentencia)</td><td>Reposición especial</td><td><span class="days-badge">3 días</span></td><td>Art. 181 y 432 CPC</td><td>Notif. de la resolución</td></tr>
+                <tr><td>Interlocutorias / Autos</td><td>Apelación (o subsidiaria)</td><td><span class="days-badge">5 días</span></td><td>Art. 189 CPC</td><td>Notif. de la resolución</td></tr>
+                <tr class="bold-row"><td>Sentencia Definitiva 1ª instancia</td><td>Apelación</td><td><span class="days-badge">10 días</span></td><td>Art. 189 CPC</td><td>Notif. por cédula (Art. 48)</td></tr>
+                <tr class="bold-row"><td>Sent. Definitiva o que pone término al juicio</td><td>Casación forma o fondo</td><td><span class="days-badge">15 días</span></td><td>Art. 770 CPC</td><td>Notif. de la sentencia</td></tr>
+                <tr><td>Resolución con falta o abuso (sin otro recurso)</td><td>Recurso de Queja</td><td><span class="days-badge">5 días</span></td><td>Auto Acordado CS</td><td>Notif. de la resolución</td></tr>
+                <tr><td>Resolución que deniega o concede mal la apelación</td><td>Recurso de Hecho</td><td><span class="days-badge">5 días</span></td><td>Art. 203 CPC</td><td>Notif. de la resolución</td></tr>
+                <tr><td>Incidentes</td><td>Traslado</td><td><span class="days-badge">3 días</span></td><td>Art. 89 CPC</td><td>Notif. por Estado Diario</td></tr>
+              </tbody>
+            </table>
+
+            <div style="background:var(--amber-light);border:1px solid var(--border-strong);border-radius:8px;padding:10px 14px;margin:12px 0;">
+              <div style="font-size:10px;font-weight:600;color:var(--amber-text);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px;">⚠ Apelación subsidiaria obligatoria</div>
+              <p style="font-size:12px;color:var(--text);line-height:1.6;">Si interpone Reposición contra una sentencia interlocutoria apelable, <strong>debe deducir apelación en subsidio en el mismo escrito y dentro del mismo plazo</strong>. Si no lo hace, pierde el recurso de apelación (Art. 189 inc. 3° CPC).</p>
+            </div>
+
+            <p style="font-size:10px;color:var(--text-3);margin:14px 0 8px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;">Acciones Constitucionales — Días corridos</p>
+            <table class="ref-table">
+              <thead><tr><th>Acción</th><th>Plazo</th><th>Base legal</th><th>Desde cuándo</th><th>Tribunal</th></tr></thead>
+              <tbody>
+                <tr class="bold-row"><td>Recurso de Protección</td><td><span class="days-badge">30 días corridos</span></td><td>AA CS</td><td>Acto u omisión / conocimiento</td><td>C. de Apelaciones</td></tr>
+                <tr><td>Recurso de Amparo</td><td><span class="days-badge">Sin plazo</span></td><td>Art. 21 CPR</td><td>Mientras subsista la amenaza</td><td>C. de Apelaciones</td></tr>
+                <tr><td>Apelación Protección / Amparo</td><td><span class="days-badge">5 días corridos</span></td><td>AA CS</td><td>Notif. de la sentencia</td><td>Corte Suprema</td></tr>
+              </tbody>
+            </table>
+
+            <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;margin-top:12px;">
+              <div style="font-size:10px;font-weight:600;color:var(--text-3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px;">Falla técnica OJV — Ley 20.886</div>
+              <p style="font-size:12px;color:var(--text);line-height:1.6;">Si el portal del Poder Judicial presenta caída el último día del plazo, la ley permite presentar el escrito el <strong>día hábil siguiente</strong>. Guarde pantallazos del error como respaldo.</p>
+            </div>
+
+          
+      </div>
+    </div>
+
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);box-shadow:var(--shadow);overflow:hidden;">
+      <div style="padding:14px 20px;border-bottom:1px solid var(--border);background:var(--surface2);">
+        <span style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--text-2);">🏁 &nbsp;Cierre de Causa y Sentencia</span>
+      </div>
+      <div style="padding:20px;">
+        
+            <table class="ref-table">
+              <thead><tr><th>Hito</th><th>Plazo</th><th>Base Legal</th><th>Nota</th></tr></thead>
+              <tbody>
+                <tr><td>Observaciones a la Prueba</td><td><span class="days-badge">10 días</span></td><td>Art. 343 CPC</td><td>Desde vencimiento del probatorio</td></tr>
+                <tr><td>Reposición contra Citación a Oír Sent.</td><td><span class="days-badge">3 días</span></td><td>Art. 432 CPC</td><td>Tras esta resolución, preclusión total</td></tr>
+                <tr><td>Medidas para Mejor Resolver</td><td><span class="days-badge">20 días</span></td><td>Art. 159 CPC</td><td>Suspenden el plazo de sentencia</td></tr>
+                <tr class="bold-row"><td>Sentencia — Juicio Ordinario</td><td><span class="days-badge">60 días</span></td><td>Art. 162 CPC</td><td>Plazo del tribunal</td></tr>
+                <tr><td>Sentencia — Juicio Sumario</td><td><span class="days-badge">10 días</span></td><td>Art. 688 CPC</td><td>Plazo del tribunal</td></tr>
+                <tr><td>Sentencia — Juicio Ejecutivo</td><td><span class="days-badge">10 días</span></td><td>Art. 474 CPC</td><td>Plazo del tribunal</td></tr>
+              </tbody>
+            </table>
+          
+      </div>
+    </div>
+
+  </div>
+</div>
+
 
 <script>
   let currentParty = '';
@@ -768,9 +794,7 @@
         ]},
       { val:'cierre', text:'Cierre y Sentencia', hint:'Art. 432 CPC — desde la citación para oír sentencia',
         tramites:[
-          { val:"3_cit",  text:"Reposición contra Citación a Oír Sentencia — 3d",
-            for:"both", hint:"Art. 432 CPC",
-            desde:"Notificación por <strong>Estado Diario</strong> de la resolución que cita a las partes para oír sentencia (Art. 432 CPC). ⚠ Tras este plazo opera la preclusión: no se admiten escritos ni pruebas, salvo nulidad procesal muy calificada." },
+
           { val:"20_mmr", text:"Medidas para Mejor Resolver — 20d",
             for:"both", hint:"Art. 159 CPC — plazo del tribunal para ejecutarlas",
             desde:"Fecha de la <strong>resolución del tribunal que decreta la medida para mejor resolver</strong> (Art. 159 CPC). Suspende el plazo del tribunal para dictar sentencia hasta su cumplimiento o hasta que venza el plazo de 20 días." },
@@ -1193,7 +1217,6 @@
     document.getElementById('hubo-dilatorias').checked = false;
     document.getElementById('dilatorias-warn').style.display = 'none';
     document.getElementById('previa-warn').style.display = 'none';
-    document.getElementById('notif-44-warn').style.display = 'none';
     document.getElementById('notif-type').value = '0';
     document.getElementById('tabla-div').style.display = 'none';
     document.getElementById('date-label').innerText = 'Fecha de Notificación';
@@ -1209,11 +1232,8 @@
     const stageSel = document.getElementById('proc-stage');
     const tramSel  = document.getElementById('proc-type');
 
-    // Show stage hint
-    const stageHelper = document.getElementById('stage-helper');
-    const stageHint = stageSel.options[stageSel.selectedIndex]?.dataset.hint;
-    if (stageHint) { stageHelper.textContent = stageHint; stageHelper.style.display = 'block'; }
-    else { stageHelper.style.display = 'none'; }
+    // Stage hint ocultado para interfaz más limpia
+    document.getElementById('stage-helper').style.display = 'none';
 
     // Populate trámites
     tramSel.innerHTML = '<option value="">Seleccione trámite…</option>';
@@ -1257,11 +1277,8 @@
     const isTabla = val === 'tabla' || val === 'tabla_ej';
     document.getElementById('tabla-div').style.display = isTabla ? 'block' : 'none';
 
-    // Base legal hint
-    const helper = document.getElementById('tramite-helper');
-    const hint = opt?.dataset.hint;
-    if (hint) { helper.textContent = hint; helper.style.display = 'block'; }
-    else { helper.style.display = 'none'; }
+    // Base legal hint ocultado para interfaz más limpia
+    document.getElementById('tramite-helper').style.display = 'none';
 
     // Desde cuándo se cuenta — render HTML, style ⚠ warnings
     const desdeBox  = document.getElementById('desde-box');
@@ -1273,6 +1290,11 @@
         '<span style="color:var(--amber-text);font-weight:500;">$1</span>$2');
       desdeText.innerHTML = styled;
       desdeBox.style.display = 'block';
+      // Colapsar el detalle al cambiar trámite
+      const dc = document.getElementById('desde-content');
+      const di = document.getElementById('desde-toggle-icon');
+      if (dc) { dc.style.display = 'none'; }
+      if (di) { di.textContent = '▸'; }
     } else { desdeBox.style.display = 'none'; }
 
     // Corridos: hide hábil-specific controls
@@ -1337,8 +1359,7 @@
 
 
   function onNotifChange() {
-    const val = document.getElementById('notif-type').value;
-    document.getElementById('notif-44-warn').style.display = val === '44' ? 'block' : 'none';
+    // reservado para futura lógica
   }
 
   function onDilatoriasChange() {
@@ -1360,6 +1381,23 @@
     else { hint.style.display = 'none'; }
   }
 
+
+  function toggleDesde() {
+    const content = document.getElementById('desde-content');
+    const icon = document.getElementById('desde-toggle-icon');
+    const isOpen = content.style.display !== 'none';
+    content.style.display = isOpen ? 'none' : 'block';
+    icon.textContent = isOpen ? '▸' : '▾';
+  }
+
+  function toggleSuspension() {
+    const ui = document.getElementById('suspension-ui');
+    const icon = document.getElementById('susp-toggle-icon');
+    const isOpen = ui.style.display !== 'none';
+    ui.style.display = isOpen ? 'none' : 'flex';
+    icon.textContent = isOpen ? '▸' : '▾';
+    if (isOpen) document.getElementById('suspension-days').value = 0;
+  }
 
   function toggleAcc(id, btn) {
     const body = document.getElementById(id);
@@ -1395,7 +1433,7 @@
       const days = parseInt(hitoVal.split('_')[0]);
       deadline = new Date(baseDate);
       deadline.setDate(deadline.getDate() + days);
-      document.getElementById('party-badge').innerHTML = '<span class="badge badge-both">Plazo para ambos</span>';
+      document.getElementById('party-badge').innerHTML = '<span class="badge badge-both">Plazo común</span>';
       const logic = strategyLogic[hitoVal] || {};
       const strategy = logic[currentParty] || logic.both || 'Revise el plazo con atención.';
       showCivilResult(null, deadline, strategy, false, true, hitoVal);
@@ -1404,8 +1442,7 @@
     }
 
     const notifType = document.getElementById('notif-type').value;
-    // Art. 44 tiene el mismo dies a quo que la notificación personal/cédula
-    const notifVal = notifType === '44' ? '0' : notifType;
+    const notifVal = notifType;
     if (notifVal === '3') baseDate = addBusinessDays(baseDate, 3);
     diaUno = new Date(baseDate);
     if (notifVal !== 'tácita') diaUno = nextBusinessDay(diaUno);
@@ -1425,7 +1462,7 @@
 
     let badge = '';
     if (hitoFor === 'both') {
-      badge = '<span class="badge badge-both">Plazo para ambos</span>';
+      badge = '<span class="badge badge-both">Plazo común</span>';
     } else if (hitoFor === 'demandante') {
       if (currentParty === 'demandante') badge = '<span class="badge badge-own">Su plazo fatal</span>';
       else if (currentParty === 'demandado') badge = '<span class="badge badge-opp">Plazo demandante</span>';
@@ -1565,6 +1602,26 @@
         <div class="history-item-date" style="color:${color}">${formatShort(entry.deadline)}</div>`;
       list.appendChild(div);
     });
+  }
+
+  // ─── TABS PRINCIPALES ───────────────────────────────────────────────────────
+  function switchTab(tab) {
+    const isCalc = tab === 'calculadora';
+    const elCalc = document.getElementById('tab-calculadora');
+    const elRef  = document.getElementById('tab-referencia');
+    const elBtnCalc = document.getElementById('tab-civil');
+    const elBtnRef  = document.getElementById('tab-ref');
+    if (elCalc) elCalc.style.display = isCalc ? 'block' : 'none';
+    if (elRef)  elRef.style.display  = isCalc ? 'none'  : 'block';
+    if (elBtnCalc) elBtnCalc.classList.toggle('active', isCalc);
+    if (elBtnRef)  elBtnRef.classList.toggle('active', !isCalc);
+    // Al entrar a Referencia, abrir todos los acordeones automáticamente
+    if (!isCalc) {
+      ['body-1','body-2','body-3'].forEach(function(id) {
+        const el = document.getElementById(id);
+        if (el) el.classList.add('open');
+      });
+    }
   }
 
   // ─── INIT ─────────────────────────────────────────────────────────────────────
