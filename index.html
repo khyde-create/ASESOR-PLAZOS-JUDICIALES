@@ -586,7 +586,6 @@
       <div id="result-content" class="result-content animate-in" style="display:none;">
         <div id="day1-section" style="margin-bottom:14px;"></div>
         <div id="deadline-section"></div>
-        <div id="countdown-section"></div>
         <div id="strategy-section"></div>
         <div id="next-chain-section"></div>
       </div>
@@ -1484,12 +1483,6 @@
 
   function showCivilResult(diaUno, deadline, strategy, isCritical, isCorridos, hitoVal) {
     const remaining = daysUntil(deadline);
-    let urgencyClass = 'ok', urgencyText = 'Tiempo disponible';
-    if (remaining < 0) { urgencyClass = 'urgent'; urgencyText = 'Plazo vencido'; }
-    else if (remaining <= 3) { urgencyClass = 'urgent'; urgencyText = 'Urgente'; }
-    else if (remaining <= 7) { urgencyClass = 'warn'; urgencyText = 'Próximo'; }
-
-    const absRemaining = Math.abs(remaining);
 
     document.getElementById('day1-section').innerHTML = diaUno
       ? `<div class="day1-label">Día 1 del plazo</div><div class="day1-date">${capitalize(formatFull(diaUno))}</div>`
@@ -1502,14 +1495,6 @@
         <div class="deadline-weekday">${capitalize(deadline.toLocaleDateString('es-CL', { weekday: 'long' }))}</div>
       </div>`;
 
-    document.getElementById('countdown-section').innerHTML = `
-      <div class="countdown-bar ${urgencyClass}" style="margin-bottom:14px;">
-        <div class="countdown-left">${urgencyText}</div>
-        <div>
-          <span class="countdown-days">${absRemaining}</span>
-          <span class="countdown-unit">${remaining < 0 ? 'días transcurridos' : remaining === 0 ? '' : 'días'}</span>
-        </div>
-      </div>`;
 
     document.getElementById('strategy-section').innerHTML = `
       <div class="strategy-box ${isCritical ? 'critical' : ''}">
